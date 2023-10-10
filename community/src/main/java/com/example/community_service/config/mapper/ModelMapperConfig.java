@@ -1,4 +1,4 @@
-package com.example.user_service.config.mapper;
+package com.example.community_service.config.mapper;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
