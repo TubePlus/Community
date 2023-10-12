@@ -1,4 +1,4 @@
-package com.example.community_service.user.domain;
+package com.example.community_service.community.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

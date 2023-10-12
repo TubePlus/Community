@@ -1,4 +1,4 @@
-package com.example.community_service.user.application;
+package com.example.community_service.community.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
