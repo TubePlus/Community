@@ -1,5 +1,15 @@
 server:
   port: 0
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    shutdown:
+      enabled: true
 
 spring:
   profiles:
