@@ -2,6 +2,7 @@ package com.example.community_service.community.application;
 
 import com.example.community_service.community.domain.BannedUser;
 import com.example.community_service.community.domain.Community;
+import com.example.community_service.community.domain.CommunityManager;
 import com.example.community_service.community.domain.CommunityMember;
 import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +34,74 @@ public class CommunityServiceImpl implements CommunityService {
     private final BannedUserRepository bannedUserRepository;
     private final CommunityMemberRepository communityMemberRepository;
     private final YoutubeService youtubeService;
+
+    /**
+     * 커뮤니티 가입/탈퇴/조회
+     */
+
+    // 커뮤니티 가입하기
+    @Override
+    public ResponseJoinCommunityDto joinCommunity(RequestJoinCommunityDto requestDto, Long communityId) {
+
+        // 커뮤니티 검색
+        Community targetCommunity = communityRepository.findById(communityId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
+
+        // 이미 가입한 유저인지 확인
+        if(communityMemberRepository.existsByCommunityIdAndUserUuid(communityId, requestDto.getUserUuid())) {
+            throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE);
+        }
+
+        // 커뮤니티 가입
+        CommunityMember communityMember = CommunityMember.builder()
+                .communityId(communityId)
+                .userUuid(requestDto.getUserUuid())
+                .build();
+
+        communityMemberRepository.save(communityMember);
+
+        // 커뮤니티 회원 수 증가
+        targetCommunity.increaseCommunitySize();
+
+        return ResponseJoinCommunityDto.builder()
+                .communityId(targetCommunity.getId())
+                .userUuid(communityMember.getUserUuid())
+                .build();
+    }
+
+    // 커뮤니티 탈퇴하기
+    @Override
+    public ResponseLeaveCommunityDto leaveCommunity(RequestLeaveCommunityDto requestDto, Long communityId) {
+
+        // 커뮤니티 검색
+        Community targetCommunity = communityRepository.findById(communityId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
+
+        // 커뮤니티 탈퇴
+        Optional<CommunityMember> communityMember =
+                communityMemberRepository.findByCommunityIdAndUserUuid(communityId, requestDto.getUserUuid());
+        communityMember.ifPresentOrElse(
+                communityMemberRepository::delete,
+                () -> {throw new BusinessException(ErrorCode.NOT_FOUND_USER);}
+        );
+
+        // 매니저일 경우 매니저 권한 삭제
+        Optional<CommunityManager> communityManager =
+                communityManagerRepository.findByCommunityIdAndManagerUuid(communityId, requestDto.getUserUuid());
+        communityManager.ifPresent(communityManagerRepository::delete);
+
+        // 커뮤니티 회원 수 감소
+        targetCommunity.decreaseCommunitySize();
+
+        return ResponseLeaveCommunityDto.builder()
+                .userUuid(requestDto.getUserUuid())
+                .communityId(targetCommunity.getId())
+                .build();
+    }
+
+    /**
+     * 커뮤니티 관리
+     */
 
     // 크리에이터 커뮤니티 생성
     @Override
@@ -97,14 +167,38 @@ public class CommunityServiceImpl implements CommunityService {
                 .build();
     }
 
+    // 커뮤니티 가입 회원 조회
+    @Override
+    public ResponseGetCommunityMemberListDto getCommunityMemberList(
+            RequestGetCommunityMemberListDto requestDto, Long communityId) {
+
+        // 커뮤니티 권한 확인
+        checkManagerOrCreator(communityId, requestDto.getManagerUuid());
+
+        // 커뮤니티 멤버 조회
+        List<CommunityMember> communityMemberList =
+                communityMemberRepository.findAllByCommunityId(communityId);
+
+        return ResponseGetCommunityMemberListDto.builder()
+                .communityMemberList(communityMemberList)
+                .build();
+    }
+
+    /**
+     * 커뮤니티 밴유저 관리
+     */
+
     // 유저 밴
     @Override
     public ResponseBanUserDto banUser(RequestBanUserDto requestDto, Long communityId) {
 
-        // todo: 이미 밴된 유저인지 확인하는 로직 필요
-
         // 커뮤니티 권한 확인
         checkManagerOrCreator(communityId, requestDto.getManagerUuid());
+
+        // 이미 밴 된 유저인지 확인
+        if (bannedUserRepository.existsByCommunityIdAndBannedUuid(communityId, requestDto.getTargetUuid())) {
+            throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE);
+        }
 
         // 유저 밴
         LocalDateTime banEndDate = LocalDateTime.now().plusDays(requestDto.getBanDays());
@@ -115,6 +209,11 @@ public class CommunityServiceImpl implements CommunityService {
                 .build();
 
         BannedUser bannedUser = bannedUserRepository.save(targetUser);
+
+        // 매니저일 경우 권한 삭제
+        Optional<CommunityManager> communityManager =
+                communityManagerRepository.findByCommunityIdAndManagerUuid(communityId, requestDto.getTargetUuid());
+        communityManager.ifPresent(communityManagerRepository::delete);
 
         return ResponseBanUserDto.builder()
                 .banEndDate(bannedUser.getBanEndDate().toLocalDate())
@@ -133,7 +232,7 @@ public class CommunityServiceImpl implements CommunityService {
         // 밴 해제할 유저 검색
         BannedUser bannedUser =
                 bannedUserRepository.findByCommunityIdAndBannedUuid(communityId, requestDto.getTargetUuid())
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_USER));
 
         bannedUserRepository.delete(bannedUser);
 
@@ -158,33 +257,37 @@ public class CommunityServiceImpl implements CommunityService {
                 .build();
     }
 
-    // 커뮤니티 가입하기
-    @Override
-    public ResponseJoinCommunityDto joinCommunity(RequestJoinCommunityDto requestDto, Long communityId) {
+    /**
+     * 커뮤니티 매니저 관리
+     */
 
-        // 커뮤니티 검색
+    // 커뮤니티 매니저 등록
+    @Override
+    public ResponseRegisterManagerDto registerManager(RequestRegisterManagerDto requestDto, Long communityId) {
+
+        // 크리에이터 권한 확인
         Community targetCommunity = communityRepository.findById(communityId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
+        if (!(targetCommunity.getOwnerUuid().equals(requestDto.getCreatorUuid()))) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST);
+        }
 
-        // 이미 가입한 유저인지 확인
-        if(communityMemberRepository.existsByCommunityIdAndUserUuid(communityId, requestDto.getUserUuid())) {
+        // 이미 매니저인지 확인
+        if (communityManagerRepository.existsByCommunityIdAndManagerUuid(communityId, requestDto.getTargetUuid())) {
             throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE);
         }
 
-        // 커뮤니티 가입
-        CommunityMember communityMember = CommunityMember.builder()
+        // 매니저 등록
+        CommunityManager communityManager = CommunityManager.builder()
                 .communityId(communityId)
-                .userUuid(requestDto.getUserUuid())
+                .managerUuid(requestDto.getTargetUuid())
                 .build();
 
-        communityMemberRepository.save(communityMember);
+        CommunityManager savedCommunityManager = communityManagerRepository.save(communityManager);
 
-        // 커뮤니티 회원 수 증가
-        targetCommunity.increaseCommunitySize();
-
-        return ResponseJoinCommunityDto.builder()
-                .communityId(targetCommunity.getId())
-                .userUuid(communityMember.getUserUuid())
+        return ResponseRegisterManagerDto.builder()
+                .communityId(savedCommunityManager.getCommunityId())
+                .managerUuid(savedCommunityManager.getManagerUuid())
                 .build();
     }
 
@@ -204,6 +307,6 @@ public class CommunityServiceImpl implements CommunityService {
                 || community.getOwnerUuid().equals(uuid))
         ) {
             throw new BusinessException(ErrorCode.BAD_REQUEST);
-        };
+        }
     }
 }

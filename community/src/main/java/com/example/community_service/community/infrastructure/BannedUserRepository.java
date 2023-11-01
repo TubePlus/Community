@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface BannedUserRepository extends JpaRepository<BannedUser, Long> {
 
+    Boolean existsByCommunityIdAndBannedUuid(Long communityId, String bannedUuid);
     Optional<BannedUser> findByCommunityIdAndBannedUuid(Long communityId, String bannedUuid);
     List<BannedUser> findAllByCommunityId(Long communityId);
 }

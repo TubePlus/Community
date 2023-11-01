@@ -26,7 +26,6 @@ public class BannedUser {
     @Column(nullable = false, name = "banned_uuid")
     private String bannedUuid;
 
-    //todo: 밴 해제일 추가
     @Column(nullable = false, name = "ban_end_date")
     @DateTimeFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private LocalDateTime banEndDate;

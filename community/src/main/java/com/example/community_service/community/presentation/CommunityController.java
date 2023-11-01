@@ -22,6 +22,7 @@ public class CommunityController {
 
     private final CommunityServiceImpl communityService;
 
+    // todo: 모든 엔티티에 createdAt, updatedAt 추가하기
     @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "커뮤니티 가입")
     @PostMapping("/{communityId}/users/me")
     public ApiResponse<Object> joinCommunity(
@@ -34,6 +35,25 @@ public class CommunityController {
         ResponseJoinCommunityDto responseDto = communityService.joinCommunity(requestDto, communityId);
 
         ResponseJoinCommunityVo responseVo = ResponseJoinCommunityVo.builder()
+                .communityId(responseDto.getCommunityId())
+                .userUuid(responseDto.getUserUuid())
+                .build();
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
+    @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "커뮤니티 탈퇴")
+    @DeleteMapping("/{communityId}/users/me")
+    public ApiResponse<Object> leaveCommunity(
+            @Valid @RequestBody RequestLeaveCommunityVo requestVo, @PathVariable Long communityId) {
+
+        RequestLeaveCommunityDto requestDto = RequestLeaveCommunityDto.builder()
+                .userUuid(requestVo.getUserUuid())
+                .build();
+
+        ResponseLeaveCommunityDto responseDto = communityService.leaveCommunity(requestDto, communityId);
+
+        ResponseLeaveCommunityVo responseVo = ResponseLeaveCommunityVo.builder()
                 .communityId(responseDto.getCommunityId())
                 .userUuid(responseDto.getUserUuid())
                 .build();
@@ -81,6 +101,25 @@ public class CommunityController {
 
         ResponseUpdateCommunityVo responseVo = ResponseUpdateCommunityVo.builder()
                 .communityId(responseDto.getCommunityId())
+                .build();
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
+    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 가입 회원 조회")
+    @PostMapping("/{communityId}/members/list")
+    public ApiResponse<Object> getCommunityMemberList(
+            @Valid @RequestBody RequestGetCommunityMemberListVo requestVo, @PathVariable Long communityId) {
+
+        RequestGetCommunityMemberListDto requestDto = RequestGetCommunityMemberListDto.builder()
+                .managerUuid(requestVo.getManagerUuid())
+                .build();
+
+        ResponseGetCommunityMemberListDto responseDto =
+                communityService.getCommunityMemberList(requestDto, communityId);
+
+        ResponseGetCommunityMemberListVo responseVo = ResponseGetCommunityMemberListVo.builder()
+                .communityMemberList(responseDto.getCommunityMemberList())
                 .build();
 
         return ApiResponse.ofSuccess(responseVo);
@@ -143,5 +182,37 @@ public class CommunityController {
                 .build();
 
         return ApiResponse.ofSuccess(responseVo);
+    }
+
+    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 등록")
+    @PostMapping("/{communityId}/managers")
+    public ApiResponse<Object> registerManager(
+            @Valid @RequestBody RequestRegisterManagerVo requestVo, @PathVariable Long communityId) {
+
+        RequestRegisterManagerDto requestDto = RequestRegisterManagerDto.builder()
+                .creatorUuid(requestVo.getCreatorUuid())
+                .targetUuid(requestVo.getTargetUuid())
+                .build();
+
+        ResponseRegisterManagerDto responseDto = communityService.registerManager(requestDto, communityId);
+
+        ResponseRegisterManagerVo responseVo = ResponseRegisterManagerVo.builder()
+                .managerUuid(responseDto.getManagerUuid())
+                .communityId(responseDto.getCommunityId())
+                .build();
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
+    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 삭제")
+    @DeleteMapping("/{communityId}/managers")
+    public ApiResponse<Object> deleteManager() {
+        return ApiResponse.ofSuccess();
+    }
+
+    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 목록 조회")
+    @PostMapping("/{communityId}/managers/list")
+    public ApiResponse<Object> getManagerList() {
+        return ApiResponse.ofSuccess();
     }
 }
