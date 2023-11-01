@@ -1,5 +1,5 @@
 server:
-  port: 8001
+  port: 0
   shutdown: graceful
 
 management:
@@ -19,7 +19,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
