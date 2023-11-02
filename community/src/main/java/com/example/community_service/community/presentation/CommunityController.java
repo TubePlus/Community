@@ -22,7 +22,9 @@ public class CommunityController {
 
     private final CommunityServiceImpl communityService;
 
-    // todo: 모든 엔티티에 createdAt, updatedAt 추가하기
+    //todo: 모든 엔티티에 createdAt, updatedAt 추가하기 / 밴 해제 로직 다시 짜기
+    // 밴 해제 유저의 밴 데이터를 삭제하는 것이 아니라 밴 데이터의 밴 종료일을 현재 시간으로 업데이트하는 것으로 변경해야함.
+    // 만약 현재 시간이 밴 종료일보다 더 빠르다면 게시물 작성 등 기본적인 커뮤니티 활동을 할 수 없도록 해야함.
     @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "커뮤니티 가입")
     @PostMapping("/{communityId}/users/me")
     public ApiResponse<Object> joinCommunity(
@@ -147,6 +149,7 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
+    // todo: 수정해야함
     @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴 해제")
     @DeleteMapping("/{communityId}/ban-users")
     public ApiResponse<Object> unbanUser(
@@ -206,13 +209,39 @@ public class CommunityController {
 
     @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 삭제")
     @DeleteMapping("/{communityId}/managers")
-    public ApiResponse<Object> deleteManager() {
-        return ApiResponse.ofSuccess();
+    public ApiResponse<Object> deleteManager(
+            @Valid @RequestBody RequestDeleteManagerVo requestVo, @PathVariable Long communityId) {
+
+        RequestDeleteManagerDto requestDto = RequestDeleteManagerDto.builder()
+                .creatorUuid(requestVo.getCreatorUuid())
+                .targetUuid(requestVo.getTargetUuid())
+                .build();
+
+        ResponseDeleteManagerDto responseDto = communityService.deleteManager(requestDto, communityId);
+
+        ResponseDeleteManagerVo responseVo = ResponseDeleteManagerVo.builder()
+                .managerUuid(responseDto.getManagerUuid())
+                .communityId(responseDto.getCommunityId())
+                .build();
+
+        return ApiResponse.ofSuccess(responseVo);
     }
 
     @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 목록 조회")
     @PostMapping("/{communityId}/managers/list")
-    public ApiResponse<Object> getManagerList() {
-        return ApiResponse.ofSuccess();
+    public ApiResponse<Object> getManagerList(
+            @Valid @RequestBody RequestGetManagerListVo requestVo, @PathVariable Long communityId) {
+
+        RequestGetManagerListDto requestDto = RequestGetManagerListDto.builder()
+                .creatorUuid(requestVo.getCreatorUuid())
+                .build();
+
+        ResponseGetManagerListDto responseDto = communityService.getManagerList(requestDto, communityId);
+
+        ResponseGetManagerListVo responseVo = ResponseGetManagerListVo.builder()
+                .managerList(responseDto.getManagerList())
+                .build();
+
+        return ApiResponse.ofSuccess(responseVo);
     }
 }
