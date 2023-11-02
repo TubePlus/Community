@@ -22,4 +22,6 @@ public interface CommunityService {
 
     // 커뮤니티 매니저 관리
     ResponseRegisterManagerDto registerManager(RequestRegisterManagerDto requestDto, Long communityId);
+    ResponseDeleteManagerDto deleteManager(RequestDeleteManagerDto requestDto, Long communityId);
+    ResponseGetManagerListDto getManagerList(RequestGetManagerListDto requestDto, Long communityId);
 }

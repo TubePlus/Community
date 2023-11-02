@@ -266,15 +266,16 @@ public class CommunityServiceImpl implements CommunityService {
     public ResponseRegisterManagerDto registerManager(RequestRegisterManagerDto requestDto, Long communityId) {
 
         // 크리에이터 권한 확인
-        Community targetCommunity = communityRepository.findById(communityId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
-        if (!(targetCommunity.getOwnerUuid().equals(requestDto.getCreatorUuid()))) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST);
-        }
+        checkCreator(communityId, requestDto.getCreatorUuid());
 
         // 이미 매니저인지 확인
         if (communityManagerRepository.existsByCommunityIdAndManagerUuid(communityId, requestDto.getTargetUuid())) {
             throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE);
+        }
+
+        // 밴유저이면 등록 불가능
+        if (bannedUserRepository.existsByCommunityIdAndBannedUuid(communityId, requestDto.getTargetUuid())) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST);
         }
 
         // 매니저 등록
@@ -288,6 +289,41 @@ public class CommunityServiceImpl implements CommunityService {
         return ResponseRegisterManagerDto.builder()
                 .communityId(savedCommunityManager.getCommunityId())
                 .managerUuid(savedCommunityManager.getManagerUuid())
+                .build();
+    }
+
+    // 커뮤니티 매니저 삭제
+    @Override
+    public ResponseDeleteManagerDto deleteManager(RequestDeleteManagerDto requestDto, Long communityId) {
+
+        // 크리에이터 권한 확인
+        checkCreator(communityId, requestDto.getCreatorUuid());
+
+        // 매니저 여부 확인 후 매니저 삭제
+        CommunityManager targetManager = communityManagerRepository.findByCommunityIdAndManagerUuid(
+                communityId, requestDto.getTargetUuid())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_USER));
+
+        communityManagerRepository.delete(targetManager);
+
+        return ResponseDeleteManagerDto.builder()
+                .communityId(targetManager.getCommunityId())
+                .managerUuid(targetManager.getManagerUuid())
+                .build();
+    }
+
+    // 커뮤니티 매니저 목록 조회
+    @Transactional(readOnly = true)
+    @Override
+    public ResponseGetManagerListDto getManagerList(RequestGetManagerListDto requestDto, Long communityId) {
+
+        // 크리에이터 권한 확인
+        checkCreator(communityId, requestDto.getCreatorUuid());
+
+        List<CommunityManager> managerList = communityManagerRepository.findAllByCommunityId(communityId);
+
+        return ResponseGetManagerListDto.builder()
+                .managerList(managerList)
                 .build();
     }
 
@@ -306,6 +342,19 @@ public class CommunityServiceImpl implements CommunityService {
         if(!(communityManagerRepository.existsByCommunityIdAndManagerUuid(communityId, uuid)
                 || community.getOwnerUuid().equals(uuid))
         ) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST);
+        }
+    }
+
+    // 크리에이터 권한 확인
+    public void checkCreator(Long communityId, String uuid) {
+
+        // 커뮤니티id에 해당하는 커뮤니티 조회
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
+
+        // 커뮤니티의 크리에이터인지 확인
+        if(!(community.getOwnerUuid().equals(uuid))) {
             throw new BusinessException(ErrorCode.BAD_REQUEST);
         }
     }
