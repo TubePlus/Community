@@ -12,13 +12,12 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestBanUserVo {
+public class RequestUpdateBanEndDateVo {
 
     @NotNull
     private String targetUuid;
 
-    private LocalDate banEndDate; // yyyy-MM-dd
-
     @NotNull
     private String managerUuid;
+    private LocalDate banEndDate; // yyyy-MM-dd
 }

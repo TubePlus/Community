@@ -1,20 +1,21 @@
 package com.example.community_service.community.application;
 
-import com.example.community_service.community.domain.BannedUser;
-import com.example.community_service.community.domain.Community;
-import com.example.community_service.community.domain.CommunityManager;
-import com.example.community_service.community.domain.CommunityMember;
+import com.example.community_service.community.domain.*;
 import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
-import com.example.community_service.community.infrastructure.BannedUserRepository;
-import com.example.community_service.community.infrastructure.CommunityManagerRepository;
-import com.example.community_service.community.infrastructure.CommunityMemberRepository;
-import com.example.community_service.community.infrastructure.CommunityRepository;
+import com.example.community_service.community.infrastructure.*;
 import com.example.community_service.global.error.ErrorCode;
 import com.example.community_service.global.error.handler.BusinessException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +35,9 @@ public class CommunityServiceImpl implements CommunityService {
     private final BannedUserRepository bannedUserRepository;
     private final CommunityMemberRepository communityMemberRepository;
     private final YoutubeService youtubeService;
+    private final EntityManager em; // QueryDsl
 
+    // todo: 검색 조회 전체에 querydsl페이지네이션 구현
     /**
      * 커뮤니티 가입/탈퇴/조회
      */
@@ -97,6 +100,40 @@ public class CommunityServiceImpl implements CommunityService {
                 .userUuid(requestDto.getUserUuid())
                 .communityId(targetCommunity.getId())
                 .build();
+    }
+
+    // 가입한 커뮤니티 목록 조회하기
+    @Transactional(readOnly = true)
+    @Override
+    public ResponseGetJoinedCommunityListDto getJoinedCommunityList(
+            RequestGetJoinedCommunityListDto requestDto, Integer count, Integer page) {
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        QCommunity c = QCommunity.community;
+        QCommunityMember m = QCommunityMember.communityMember;
+
+        // todo: 쿼리 최적화 필요
+        List<QJoinedCommunityDto> communityList = queryFactory
+                .select(Projections.fields(QJoinedCommunityDto.class,
+                        c.id.as("communityId"),
+                        c.ownerUuid,
+                        c.profileImage,
+                        c.communityName,
+                        c.description,
+                        c.youtubeName,
+                        c.communitySize
+                ))
+                .from(c)
+                .join(c).on(c.id.eq(m.communityId))
+                .where(m.userUuid.eq(requestDto.getUserUuid()))
+                .orderBy(m.updatedDate.desc())
+                .offset(count * page)
+                .limit(count)
+                .fetch();
+
+            return ResponseGetJoinedCommunityListDto.builder()
+                    .communityList(communityList)
+                    .build();
     }
 
     /**
@@ -201,11 +238,10 @@ public class CommunityServiceImpl implements CommunityService {
         }
 
         // 유저 밴
-        LocalDateTime banEndDate = LocalDateTime.now().plusDays(requestDto.getBanDays());
         BannedUser targetUser = BannedUser.builder()
                 .communityId(communityId)
                 .bannedUuid(requestDto.getTargetUuid())
-                .banEndDate(banEndDate)
+                .banEndDate(requestDto.getBanEndDate().atTime(0, 0, 0))
                 .build();
 
         BannedUser bannedUser = bannedUserRepository.save(targetUser);
@@ -216,6 +252,29 @@ public class CommunityServiceImpl implements CommunityService {
         communityManager.ifPresent(communityManagerRepository::delete);
 
         return ResponseBanUserDto.builder()
+                .banEndDate(bannedUser.getBanEndDate().toLocalDate())
+                .bannedUserUuid(bannedUser.getBannedUuid())
+                .communityId(bannedUser.getCommunityId())
+                .build();
+    }
+
+    // 유저 밴 해제일 업데이트
+    @Override
+    public ResponseUpdateBanEndDateDto updateBanEndDate(RequestUpdateBanEndDateDto requestDto, Long communityId) {
+
+        // 커뮤니티 권한 확인
+        checkManagerOrCreator(communityId, requestDto.getManagerUuid());
+
+        // 밴 유저 검색
+        BannedUser bannedUser =
+                bannedUserRepository.findByCommunityIdAndBannedUuid(communityId, requestDto.getTargetUuid())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_USER));
+
+        // 유저 밴 종료일 변경
+        LocalDateTime banEndDate = requestDto.getBanEndDate().atTime(0, 0, 0);
+        bannedUser.updateBanEndDate(banEndDate);
+
+        return ResponseUpdateBanEndDateDto.builder()
                 .banEndDate(bannedUser.getBanEndDate().toLocalDate())
                 .bannedUserUuid(bannedUser.getBannedUuid())
                 .communityId(bannedUser.getCommunityId())

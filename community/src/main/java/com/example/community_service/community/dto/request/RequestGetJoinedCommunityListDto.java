@@ -5,15 +5,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Builder
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestBanUserDto {
+public class RequestGetJoinedCommunityListDto {
 
-    private String targetUuid;
-    private LocalDate banEndDate;
-    private String managerUuid;
+    private String userUuid;
 }
