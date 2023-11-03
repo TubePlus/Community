@@ -6,19 +6,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestBanUserVo {
+public class RequestGetJoinedCommunityListVo {
 
     @NotNull
-    private String targetUuid;
-
-    private LocalDate banEndDate; // yyyy-MM-dd
-
-    @NotNull
-    private String managerUuid;
+    private String userUuid;
 }

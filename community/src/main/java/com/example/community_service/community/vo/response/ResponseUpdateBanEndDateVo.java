@@ -1,4 +1,4 @@
-package com.example.community_service.community.dto.request;
+package com.example.community_service.community.vo.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Builder
 @Getter
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
-public class RequestBanUserDto {
+@NoArgsConstructor
+public class ResponseUpdateBanEndDateVo {
 
-    private String targetUuid;
+    private String bannedUserUuid;
     private LocalDate banEndDate;
-    private String managerUuid;
+    private Long communityId;
 }

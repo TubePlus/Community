@@ -22,9 +22,15 @@ public class CommunityController {
 
     private final CommunityServiceImpl communityService;
 
+    /**
+     * 서버간 상호작용 시에 요구되는 API이기 때문에 게시판, 게시물 서버와 나중에 얘기해봐야함.
+     */
     //todo: 모든 엔티티에 createdAt, updatedAt 추가하기 / 밴 해제 로직 다시 짜기
-    // 밴 해제 유저의 밴 데이터를 삭제하는 것이 아니라 밴 데이터의 밴 종료일을 현재 시간으로 업데이트하는 것으로 변경해야함.
+    // 밴 된 유저가 권한이 요구되는 작업을 수행하려고 할 때 ->
+    // 1. 해당 유저가 밴 테이블에 존재하는지 확인 -> 존재할 경우 2.로 이동 / 존재하지 않을 경우 작업 수행 허가
+    // 2. 존재한다면 현재 시간과 밴 종료일을 비교 -> 현재일이 밴 종료일이 더 늦다면 밴 해제(밴 데이터 자체를 삭제)
     // 만약 현재 시간이 밴 종료일보다 더 빠르다면 게시물 작성 등 기본적인 커뮤니티 활동을 할 수 없도록 해야함.
+
     @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "커뮤니티 가입")
     @PostMapping("/{communityId}/users/me")
     public ApiResponse<Object> joinCommunity(
@@ -58,6 +64,26 @@ public class CommunityController {
         ResponseLeaveCommunityVo responseVo = ResponseLeaveCommunityVo.builder()
                 .communityId(responseDto.getCommunityId())
                 .userUuid(responseDto.getUserUuid())
+                .build();
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
+    @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "가입한 커뮤니티 조회")
+    @PostMapping("/users/me")
+    public ApiResponse<Object> getJoinedCommunityList(
+            @Valid @RequestBody RequestGetJoinedCommunityListVo requestVo,
+            @RequestParam(defaultValue = "10") Integer count, @RequestParam(defaultValue = "0") Integer page) {
+
+        RequestGetJoinedCommunityListDto requestDto = RequestGetJoinedCommunityListDto.builder()
+                .userUuid(requestVo.getUserUuid())
+                .build();
+
+        ResponseGetJoinedCommunityListDto responseDto =
+                communityService.getJoinedCommunityList(requestDto, count, page);
+
+        ResponseGetJoinedCommunityListVo responseVo = ResponseGetJoinedCommunityListVo.builder()
+                .communityList(responseDto.getCommunityList())
                 .build();
 
         return ApiResponse.ofSuccess(responseVo);
@@ -134,7 +160,7 @@ public class CommunityController {
 
         RequestBanUserDto requestDto = RequestBanUserDto.builder()
                 .targetUuid(requestVo.getTargetUuid())
-                .banDays(requestVo.getBanDays())
+                .banEndDate(requestVo.getBanEndDate())
                 .managerUuid(requestVo.getManagerUuid())
                 .build();
 
@@ -149,7 +175,28 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-    // todo: 수정해야함
+    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴 종료일 수정")
+    @PutMapping("/{communityId}/ban-users")
+    public ApiResponse<Object> updateBanEndDate(
+            @Valid @RequestBody RequestUpdateBanEndDateVo requestVo, @PathVariable Long communityId) {
+
+        RequestUpdateBanEndDateDto requestDto = RequestUpdateBanEndDateDto.builder()
+                .targetUuid(requestVo.getTargetUuid())
+                .banEndDate(requestVo.getBanEndDate())
+                .managerUuid(requestVo.getManagerUuid())
+                .build();
+
+        ResponseUpdateBanEndDateDto responseDto = communityService.updateBanEndDate(requestDto, communityId);
+
+        ResponseUpdateBanEndDateVo responseVo = ResponseUpdateBanEndDateVo.builder()
+                .bannedUserUuid(responseDto.getBannedUserUuid())
+                .banEndDate(responseDto.getBanEndDate())
+                .communityId(responseDto.getCommunityId())
+                .build();
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
     @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴 해제")
     @DeleteMapping("/{communityId}/ban-users")
     public ApiResponse<Object> unbanUser(

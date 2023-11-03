@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Builder
 @Getter
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
-public class RequestBanUserDto {
+@NoArgsConstructor
+public class RequestUpdateBanEndDateDto {
 
     private String targetUuid;
-    private LocalDate banEndDate;
     private String managerUuid;
+    private LocalDate banEndDate;
 }
