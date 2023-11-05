@@ -84,6 +84,7 @@ public class CommunityController {
 
         ResponseGetJoinedCommunityListVo responseVo = ResponseGetJoinedCommunityListVo.builder()
                 .communityList(responseDto.getCommunityList())
+                .pageCount(responseDto.getPageCount())
                 .build();
 
         return ApiResponse.ofSuccess(responseVo);

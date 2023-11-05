@@ -1,10 +1,7 @@
 package com.example.community_service.community.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,7 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class CommunityManager {
 
@@ -37,4 +34,12 @@ public class CommunityManager {
 
     @LastModifiedDate
     private LocalDate updatedDate;
+
+    public static CommunityManager createManager(String managerUuid, Long communityId) {
+
+        return CommunityManager.builder()
+                .managerUuid(managerUuid)
+                .communityId(communityId)
+                .build();
+    }
 }

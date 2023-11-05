@@ -7,15 +7,11 @@ import com.example.community_service.community.infrastructure.*;
 import com.example.community_service.global.error.ErrorCode;
 import com.example.community_service.global.error.handler.BusinessException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,20 +46,12 @@ public class CommunityServiceImpl implements CommunityService {
         Community targetCommunity = communityRepository.findById(communityId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
 
-        // 이미 가입한 유저인지 확인
-        if(communityMemberRepository.existsByCommunityIdAndUserUuid(communityId, requestDto.getUserUuid())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE);
-        }
-
         // 커뮤니티 가입
-        CommunityMember communityMember = CommunityMember.builder()
-                .communityId(communityId)
-                .userUuid(requestDto.getUserUuid())
-                .build();
+        CommunityMember communityMember = CommunityMember.joinCommunity(communityId, requestDto.getUserUuid());
 
         communityMemberRepository.save(communityMember);
 
-        // 커뮤니티 회원 수 증가
+        // 커뮤니티 회원 수 증가처리
         targetCommunity.increaseCommunitySize();
 
         return ResponseJoinCommunityDto.builder()
@@ -83,8 +71,7 @@ public class CommunityServiceImpl implements CommunityService {
         // 커뮤니티 탈퇴
         Optional<CommunityMember> communityMember =
                 communityMemberRepository.findByCommunityIdAndUserUuid(communityId, requestDto.getUserUuid());
-        communityMember.ifPresentOrElse(
-                communityMemberRepository::delete,
+        communityMember.ifPresentOrElse(communityMemberRepository::delete,
                 () -> {throw new BusinessException(ErrorCode.NOT_FOUND_USER);}
         );
 
@@ -112,6 +99,8 @@ public class CommunityServiceImpl implements CommunityService {
         QCommunity c = QCommunity.community;
         QCommunityMember m = QCommunityMember.communityMember;
 
+        page -= 1; // 페이지는 0부터 시작
+
         // todo: 쿼리 최적화 필요
         List<QJoinedCommunityDto> communityList = queryFactory
                 .select(Projections.fields(QJoinedCommunityDto.class,
@@ -124,16 +113,27 @@ public class CommunityServiceImpl implements CommunityService {
                         c.communitySize
                 ))
                 .from(c)
-                .join(c).on(c.id.eq(m.communityId))
-                .where(m.userUuid.eq(requestDto.getUserUuid()))
-                .orderBy(m.updatedDate.desc())
-                .offset(count * page)
-                .limit(count)
+                .join(m).on(c.id.eq(m.communityId)) // 커뮤니티 테이블과 커뮤니티 멤버 테이블 조인
+                .where(m.userUuid.eq(requestDto.getUserUuid())) // 커뮤니티 멤버 데이터 중 uuid가 일치하는 데이터만 조회
+                .orderBy(m.updatedDate.desc()) // 마지막 업데이트 순으로 정렬
+                .offset((long) count * page) // 시작 지점
+                .limit(count) // 시작 지점부터 몇 개 가져올지 설정
                 .fetch();
 
-            return ResponseGetJoinedCommunityListDto.builder()
-                    .communityList(communityList)
-                    .build();
+        // 전체 갯수 카운팅
+        Long countQuery = queryFactory
+                .select(m.count())
+                .from(m)
+                .where(m.userUuid.eq(requestDto.getUserUuid()))
+                .fetchFirst();
+
+        // 페이지 갯수 카운팅
+        countQuery = (long) Math.ceil((double) countQuery / count);
+
+        return ResponseGetJoinedCommunityListDto.builder()
+                .communityList(communityList)
+                .pageCount(countQuery)
+                .build();
     }
 
     /**
@@ -145,16 +145,6 @@ public class CommunityServiceImpl implements CommunityService {
     public ResponseCreateCommunityDto createCommunity(
             RequestCreateCommunityDto requestDto) throws JsonProcessingException {
 
-        // 크리에이터가 아닐 시 에러 처리
-        if (!requestDto.getIsCreator()) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST);
-        }
-
-        // 이미 커뮤니티 존재 시에 에러 처리
-        if (communityRepository.existsByOwnerUuid(requestDto.getOwnerUuid())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE);
-        }
-
         // 유튜브 API로 배너/프로필이미지/채널 이름 불러오기 기능 추가하기
         HashMap<String, String> youtubeData = youtubeService.getMyChannelInfo(requestDto.getToken());
 
@@ -164,15 +154,11 @@ public class CommunityServiceImpl implements CommunityService {
 //            throw new BusinessException(ErrorCode.BAD_REQUEST);
 //        }
 
-        Community community = Community.builder()
-                .communitySize(1) // 커뮤니티 생성 시 크리에이터 1명이므로 1로 설정
-                .bannerImage(youtubeData.get("bannerImageUrl"))
-                .profileImage(youtubeData.get("profileImageUrl"))
-                .youtubeName(youtubeData.get("youtubeName"))
-                .communityName(requestDto.getCommunityName())
-                .description(requestDto.getDescription())
-                .ownerUuid(requestDto.getOwnerUuid())
-                .build();
+        // 커뮤니티 생성
+        Community community = Community.createCommunity(
+                youtubeData.get("bannerImageUrl"), youtubeData.get("profileImageUrl"),
+                youtubeData.get("youtubeName"), requestDto.getCommunityName(),
+                requestDto.getDescription(), requestDto.getOwnerUuid());
 
         Community savedCommunity = communityRepository.save(community);
 
@@ -190,11 +176,6 @@ public class CommunityServiceImpl implements CommunityService {
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
 
-        // 커뮤니티 권한 확인(크리에이터만 가능)
-        if (!(community.getOwnerUuid().equals(requestDto.getOwnerUuid()))) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST);
-        }
-
         community.updateCommunity(
                 requestDto.getCommunityName(), requestDto.getDescription(),
                 requestDto.getProfileImage(), requestDto.getBannerImage());
@@ -209,9 +190,7 @@ public class CommunityServiceImpl implements CommunityService {
     public ResponseGetCommunityMemberListDto getCommunityMemberList(
             RequestGetCommunityMemberListDto requestDto, Long communityId) {
 
-        // 커뮤니티 권한 확인
-        checkManagerOrCreator(communityId, requestDto.getManagerUuid());
-
+        // todo: 페이징으로 변경
         // 커뮤니티 멤버 조회
         List<CommunityMember> communityMemberList =
                 communityMemberRepository.findAllByCommunityId(communityId);
@@ -229,24 +208,14 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public ResponseBanUserDto banUser(RequestBanUserDto requestDto, Long communityId) {
 
-        // 커뮤니티 권한 확인
-        checkManagerOrCreator(communityId, requestDto.getManagerUuid());
-
-        // 이미 밴 된 유저인지 확인
-        if (bannedUserRepository.existsByCommunityIdAndBannedUuid(communityId, requestDto.getTargetUuid())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE);
-        }
-
         // 유저 밴
-        BannedUser targetUser = BannedUser.builder()
-                .communityId(communityId)
-                .bannedUuid(requestDto.getTargetUuid())
-                .banEndDate(requestDto.getBanEndDate().atTime(0, 0, 0))
-                .build();
+        BannedUser targetUser = BannedUser.banUser(
+                communityId, requestDto.getTargetUuid(),
+                requestDto.getBanEndDate().atTime(0,0,0));
 
         BannedUser bannedUser = bannedUserRepository.save(targetUser);
 
-        // 매니저일 경우 권한 삭제
+        // 밴 당한 유저가 매니저일 경우 권한 삭제
         Optional<CommunityManager> communityManager =
                 communityManagerRepository.findByCommunityIdAndManagerUuid(communityId, requestDto.getTargetUuid());
         communityManager.ifPresent(communityManagerRepository::delete);
@@ -261,9 +230,6 @@ public class CommunityServiceImpl implements CommunityService {
     // 유저 밴 해제일 업데이트
     @Override
     public ResponseUpdateBanEndDateDto updateBanEndDate(RequestUpdateBanEndDateDto requestDto, Long communityId) {
-
-        // 커뮤니티 권한 확인
-        checkManagerOrCreator(communityId, requestDto.getManagerUuid());
 
         // 밴 유저 검색
         BannedUser bannedUser =
@@ -285,14 +251,12 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public ResponseUnbanUserDto unbanUser(RequestUnbanUserDto requestDto, Long communityId) {
 
-        // 커뮤니티 권한 확인
-        checkManagerOrCreator(communityId, requestDto.getManagerUuid());
-
         // 밴 해제할 유저 검색
         BannedUser bannedUser =
                 bannedUserRepository.findByCommunityIdAndBannedUuid(communityId, requestDto.getTargetUuid())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_USER));
 
+        // 밴 해제
         bannedUserRepository.delete(bannedUser);
 
         return ResponseUnbanUserDto.builder()
@@ -305,9 +269,7 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public ResponseGetBannedUserListDto getBannedUserList(RequestGetBannedUserListDto requestDto, Long communityId) {
 
-        // 커뮤니티 권한 확인
-        checkManagerOrCreator(communityId, requestDto.getManagerUuid());
-
+        // todo: 페이징으로 변경
         // 밴 당한 유저 목록 불러오기
         List<BannedUser> bannedUserList = bannedUserRepository.findAllByCommunityId(communityId);
 
@@ -324,24 +286,9 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public ResponseRegisterManagerDto registerManager(RequestRegisterManagerDto requestDto, Long communityId) {
 
-        // 크리에이터 권한 확인
-        checkCreator(communityId, requestDto.getCreatorUuid());
-
-        // 이미 매니저인지 확인
-        if (communityManagerRepository.existsByCommunityIdAndManagerUuid(communityId, requestDto.getTargetUuid())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE);
-        }
-
-        // 밴유저이면 등록 불가능
-        if (bannedUserRepository.existsByCommunityIdAndBannedUuid(communityId, requestDto.getTargetUuid())) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST);
-        }
-
         // 매니저 등록
-        CommunityManager communityManager = CommunityManager.builder()
-                .communityId(communityId)
-                .managerUuid(requestDto.getTargetUuid())
-                .build();
+        CommunityManager communityManager = CommunityManager.createManager(
+                requestDto.getTargetUuid(), communityId);
 
         CommunityManager savedCommunityManager = communityManagerRepository.save(communityManager);
 
@@ -354,9 +301,6 @@ public class CommunityServiceImpl implements CommunityService {
     // 커뮤니티 매니저 삭제
     @Override
     public ResponseDeleteManagerDto deleteManager(RequestDeleteManagerDto requestDto, Long communityId) {
-
-        // 크리에이터 권한 확인
-        checkCreator(communityId, requestDto.getCreatorUuid());
 
         // 매니저 여부 확인 후 매니저 삭제
         CommunityManager targetManager = communityManagerRepository.findByCommunityIdAndManagerUuid(
@@ -376,9 +320,7 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public ResponseGetManagerListDto getManagerList(RequestGetManagerListDto requestDto, Long communityId) {
 
-        // 크리에이터 권한 확인
-        checkCreator(communityId, requestDto.getCreatorUuid());
-
+        // todo: 페이징 구현
         List<CommunityManager> managerList = communityManagerRepository.findAllByCommunityId(communityId);
 
         return ResponseGetManagerListDto.builder()

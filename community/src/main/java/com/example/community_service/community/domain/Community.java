@@ -1,10 +1,7 @@
 package com.example.community_service.community.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,7 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class Community {
 
@@ -58,6 +55,20 @@ public class Community {
     @LastModifiedDate
     private LocalDate updatedDate;
 
+    public static Community createCommunity(
+            String bannerImage, String profileImage, String youtubeName,
+            String communityName, String description, String ownerUuid) {
+
+        return Community.builder()
+                .communitySize(1)
+                .bannerImage(bannerImage)
+                .profileImage(profileImage)
+                .youtubeName(youtubeName)
+                .communityName(communityName)
+                .description(description)
+                .ownerUuid(ownerUuid)
+                .build();
+    }
     public void updateCommunity(String communityName, String description, String profileImage, String bannerImage) {
         this.communityName = communityName;
         this.description = description;
