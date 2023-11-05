@@ -14,4 +14,5 @@ import java.util.List;
 public class ResponseGetJoinedCommunityListVo {
 
     private List<QJoinedCommunityDto> communityList;
+    private Long pageCount;
 }
