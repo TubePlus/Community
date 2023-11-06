@@ -13,7 +13,9 @@ public class RequestCreateCommunityDto {
 
     private String ownerUuid;
     private String communityName;
-    private String token;
     private String description;
     private Boolean isCreator;
+    private String bannerImage;
+    private String profileImage;
+    private String youtubeName;
 }

@@ -14,8 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
-public class MembershipUser {
+public class MembershipUser { // todo: communityMember와 합치는 방안 고려?
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,10 +27,4 @@ public class MembershipUser {
     // 멤버십 유저의 uuid
     @Column(nullable = false, name = "membership_uuid")
     private String membershipUuid;
-
-    @CreatedDate
-    private LocalDateTime createdDate;
-
-    @LastModifiedDate
-    private LocalDate updatedDate;
 }

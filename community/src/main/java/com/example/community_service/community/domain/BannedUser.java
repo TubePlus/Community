@@ -1,5 +1,6 @@
 package com.example.community_service.community.domain;
 
+import com.example.community_service.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -15,9 +16,9 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
-public class BannedUser {
+public class BannedUser extends BaseEntity {
 
+    // todo: 커뮤니티멤버와 합치는 방안 고려?
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,12 +35,6 @@ public class BannedUser {
     @Column(nullable = false, name = "ban_end_date")
     @DateTimeFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private LocalDateTime banEndDate;
-
-    @CreatedDate
-    private LocalDateTime createdDate;
-
-    @LastModifiedDate
-    private LocalDate updatedDate;
 
     public static BannedUser banUser (Long communityId, String bannedUuid, LocalDateTime banEndDate) {
 
