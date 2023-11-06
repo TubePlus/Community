@@ -1,26 +1,21 @@
 package com.example.community_service.community.domain;
 
+import com.example.community_service.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
-public class Community {
+public class Community extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // todo: 글자수 제한 채워넣기
     // 크리에이터 uuid
     @Column(nullable = false, name = "owner_uuid")
     private String ownerUuid;
@@ -45,22 +40,18 @@ public class Community {
     @Column(name = "youtube_name")
     private String youtubeName;
 
+    // todo: 변경됨
     // 커뮤니티 회원 수
-    @Column(nullable = false, name = "community_size")
-    private Integer communitySize;
+    @Column(nullable = false, name = "community_member_count")
+    private Integer communityMemberCount;
 
-    @CreatedDate
-    private LocalDateTime createdDate;
-
-    @LastModifiedDate
-    private LocalDate updatedDate;
-
+    // todo: communityMemberCount(1) 수정하기
     public static Community createCommunity(
             String bannerImage, String profileImage, String youtubeName,
             String communityName, String description, String ownerUuid) {
 
         return Community.builder()
-                .communitySize(1)
+                .communityMemberCount(1)
                 .bannerImage(bannerImage)
                 .profileImage(profileImage)
                 .youtubeName(youtubeName)
@@ -76,12 +67,16 @@ public class Community {
         this.profileImage = profileImage;
     }
 
+    // todo: 특정한 조건에 의해 변경되는 값이기 때문에 비즈니스 로직으로 빼기(도메인 로직 아님)
     public void increaseCommunitySize() {
-        this.communitySize++;
+        this.communityMemberCount++;
     }
 
     public void decreaseCommunitySize() {
-        this.communitySize--;
+        this.communityMemberCount--;
     }
 
+    public void updateCommunityMemberCount(Integer communityMemberCount) {
+        this.communityMemberCount = communityMemberCount;
+    }
 }

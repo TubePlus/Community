@@ -4,7 +4,7 @@ import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public interface CommunityService {
+public interface CommunityService { // todo: 인터페이스 도메인별로 구분해서 나누기
 
     // 커뮤니티 관리
     ResponseCreateCommunityDto createCommunity(RequestCreateCommunityDto requestDto) throws JsonProcessingException;
@@ -22,6 +22,7 @@ public interface CommunityService {
     ResponseLeaveCommunityDto leaveCommunity(RequestLeaveCommunityDto requestDto, Long communityId);
     ResponseGetJoinedCommunityListDto getJoinedCommunityList(
             RequestGetJoinedCommunityListDto requestDto, Integer count, Integer page);
+    ResponseGetCommunityInfoDto getCommunityInfo(Long communityId);
 
     // 커뮤니티 매니저 관리
     ResponseRegisterManagerDto registerManager(RequestRegisterManagerDto requestDto, Long communityId);

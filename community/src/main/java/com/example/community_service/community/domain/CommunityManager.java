@@ -14,8 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
-public class CommunityManager {
+public class CommunityManager { // todo: communityMember와 합치는 방안 고려?
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,12 +27,6 @@ public class CommunityManager {
     // 커뮤니티 id
     @Column(nullable = false, name = "community_id")
     private Long communityId;
-
-    @CreatedDate
-    private LocalDateTime createdDate;
-
-    @LastModifiedDate
-    private LocalDate updatedDate;
 
     public static CommunityManager createManager(String managerUuid, Long communityId) {
 
