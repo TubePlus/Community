@@ -13,4 +13,10 @@ import java.util.List;
 public class ResponseGetCommunityMemberListVo {
 
     private List<CommunityMember> communityMemberList;
+
+    public static ResponseGetCommunityMemberListVo formResponseVo(List<CommunityMember> communityMemberList) {
+        return ResponseGetCommunityMemberListVo.builder()
+                .communityMemberList(communityMemberList)
+                .build();
+    }
 }

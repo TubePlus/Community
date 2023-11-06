@@ -3,8 +3,6 @@ package com.example.community_service.community.presentation;
 import com.example.community_service.community.application.CommunityMemberServiceImpl;
 import com.example.community_service.community.application.CommunityServiceImpl;
 import com.example.community_service.community.application.YoutubeService;
-import com.example.community_service.community.domain.Community;
-import com.example.community_service.community.domain.CommunityMember;
 import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
 import com.example.community_service.community.vo.request.*;
@@ -18,8 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.HashMap;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -49,16 +47,14 @@ public class CommunityController {
                 .userUuid(requestVo.getUserUuid())
                 .build();
 
-        // 커뮤니티 가입
+        // 커뮤니티 가입 처리(가입한 회원 수 반환)
         Integer memberCount = communityMemberService.userJoinCommunity(communityId, requestDto.getUserUuid());
 
         // 커뮤니티 회원수 변경
         communityService.updateCommunityMemberCount(communityId, memberCount);
 
-        ResponseJoinCommunityVo responseVo = ResponseJoinCommunityVo.builder()
-                .communityId(communityId)
-                .userUuid(requestDto.getUserUuid())
-                .build();
+        ResponseJoinCommunityVo responseVo = ResponseJoinCommunityVo.formResponseVo(
+                requestDto.getUserUuid(), communityId);
 
         return ApiResponse.ofSuccess(responseVo);
     }
@@ -72,16 +68,14 @@ public class CommunityController {
                 .userUuid(requestVo.getUserUuid())
                 .build();
 
-        // 커뮤니티 탈퇴
+        // 커뮤니티 탈퇴 처리
         Integer memberCount = communityMemberService.userLeaveCommunity(communityId, requestDto.getUserUuid());
 
         // 커뮤니티 회원수 변경
         communityService.updateCommunityMemberCount(communityId, memberCount);
 
-        ResponseLeaveCommunityVo responseVo = ResponseLeaveCommunityVo.builder()
-                .communityId(communityId)
-                .userUuid(requestDto.getUserUuid())
-                .build();
+        ResponseLeaveCommunityVo responseVo = ResponseLeaveCommunityVo.formResponseVo(
+                communityId, requestDto.getUserUuid());
 
         return ApiResponse.ofSuccess(responseVo);
     }
@@ -96,13 +90,12 @@ public class CommunityController {
                 .userUuid(requestVo.getUserUuid())
                 .build();
 
+        // 유저가 가입한 커뮤니티 목록 조회
         ResponseGetJoinedCommunityListDto responseDto =
                 communityService.getJoinedCommunityList(requestDto.getUserUuid(), count, page);
 
-        ResponseGetJoinedCommunityListVo responseVo = ResponseGetJoinedCommunityListVo.builder()
-                .communityList(responseDto.getCommunityList())
-                .pageCount(responseDto.getPageCount())
-                .build();
+        ResponseGetJoinedCommunityListVo responseVo = ResponseGetJoinedCommunityListVo.formResponseVo(
+                responseDto.getCommunityList(), responseDto.getPageCount());
 
         return ApiResponse.ofSuccess(responseVo);
     }
@@ -111,6 +104,7 @@ public class CommunityController {
     @PostMapping("/{communityId}/info")
     public ApiResponse<Object> getCommunityInfo(@PathVariable Long communityId) {
 
+        // 커뮤니티id에 해당하는 커뮤니티 정보 조회
         ResponseGetCommunityInfoDto responseDto = communityService.getCommunityInfo(communityId);
 
         ResponseGetCommunityInfoVo responseVo = ResponseGetCommunityInfoVo.formResponseVo(
@@ -121,75 +115,68 @@ public class CommunityController {
 
         return ApiResponse.ofSuccess(responseVo);
     }
-//
-//    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 생성")
-//    @PostMapping("")
-//    public ApiResponse<Object> createCommunity(
-//            @Valid @RequestBody RequestCreateCommunityVo requestVo) throws JsonProcessingException {
-//
-//        // 유튜브 API로 배너/프로필이미지/채널 이름 불러오기 기능 추가하기
-//        HashMap<String, String> youtubeData = youtubeService.getMyChannelInfo(requestVo.getToken());
-//
-//        RequestCreateCommunityDto requestDto = RequestCreateCommunityDto.builder()
-//                .communityName(requestVo.getCommunityName())
-//                .description(requestVo.getDescription())
-//                .bannerImage(youtubeData.get("bannerImageUrl"))
-//                .profileImage(youtubeData.get("profileImageUrl"))
-//                .youtubeName(youtubeData.get("youtubeName"))
-//                .ownerUuid(requestVo.getOwnerUuid())
-//                .isCreator(requestVo.getIsCreator())
-//                .build();
-//
-//        ResponseCreateCommunityDto responseDto = communityService.createCommunity(requestDto);
-//
-//        ResponseCreateCommunityVo responseVo = ResponseCreateCommunityVo.builder()
-//                .communityId(responseDto.getCommunityId())
-//                .build();
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
-//
-//    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 정보 수정")
-//    @PutMapping("/{communityId}/info")
-//    public ApiResponse<Object> updateCommunity(
-//            @Valid @RequestBody RequestUpdateCommunityVo requestVo, @PathVariable Long communityId) {
-//
-//        RequestUpdateCommunityDto requestDto = RequestUpdateCommunityDto.builder()
-//                .communityName(requestVo.getCommunityName())
-//                .description(requestVo.getDescription())
-//                .profileImage(requestVo.getProfileImage())
-//                .bannerImage(requestVo.getBannerImage())
-//                .ownerUuid(requestVo.getOwnerUuid())
-//                .build();
-//
-//        ResponseUpdateCommunityDto responseDto =
-//                communityService.updateCommunity(requestDto, communityId);
-//
-//        ResponseUpdateCommunityVo responseVo = ResponseUpdateCommunityVo.builder()
-//                .communityId(responseDto.getCommunityId())
-//                .build();
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
-//
-//    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 가입 회원 조회")
-//    @PostMapping("/{communityId}/members/list")
-//    public ApiResponse<Object> getCommunityMemberList(
-//            @Valid @RequestBody RequestGetCommunityMemberListVo requestVo, @PathVariable Long communityId) {
-//
-//        RequestGetCommunityMemberListDto requestDto = RequestGetCommunityMemberListDto.builder()
-//                .managerUuid(requestVo.getManagerUuid())
-//                .build();
-//
-//        ResponseGetCommunityMemberListDto responseDto =
-//                communityService.getCommunityMemberList(requestDto, communityId);
-//
-//        ResponseGetCommunityMemberListVo responseVo = ResponseGetCommunityMemberListVo.builder()
-//                .communityMemberList(responseDto.getCommunityMemberList())
-//                .build();
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
+
+    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 생성")
+    @PostMapping("")
+    public ApiResponse<Object> createCommunity(
+            @Valid @RequestBody RequestCreateCommunityVo requestVo) throws JsonProcessingException {
+
+        // 유튜브 API로 배너/프로필이미지/채널 이름 불러오기 기능 추가하기
+        HashMap<String, String> youtubeData = youtubeService.getMyChannelInfo(requestVo.getToken());
+
+        RequestCreateCommunityDto requestDto = RequestCreateCommunityDto.builder()
+                .communityName(requestVo.getCommunityName())
+                .description(requestVo.getDescription())
+                .bannerImage(youtubeData.get("bannerImageUrl"))
+                .profileImage(youtubeData.get("profileImageUrl"))
+                .youtubeName(youtubeData.get("youtubeName"))
+                .ownerUuid(requestVo.getOwnerUuid())
+                .isCreator(requestVo.getIsCreator())
+                .build();
+
+        // 커뮤니티 생성하고 저장하기
+        ResponseCreateCommunityDto responseDto = communityService.createCommunity(requestDto);
+
+        ResponseCreateCommunityVo responseVo = ResponseCreateCommunityVo.formResponseVo(responseDto.getCommunityId());
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
+    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 정보 수정")
+    @PutMapping("/{communityId}/info")
+    public ApiResponse<Object> updateCommunity(
+            @Valid @RequestBody RequestUpdateCommunityVo requestVo, @PathVariable Long communityId) {
+
+        RequestUpdateCommunityDto requestDto = RequestUpdateCommunityDto.builder()
+                .communityName(requestVo.getCommunityName())
+                .description(requestVo.getDescription())
+                .profileImage(requestVo.getProfileImage())
+                .bannerImage(requestVo.getBannerImage())
+                .ownerUuid(requestVo.getOwnerUuid())
+                .build();
+
+        // 커뮤니티id에 해당하는 커뮤니티 정보 수정
+        ResponseUpdateCommunityDto responseDto =
+                communityService.updateCommunity(requestDto, communityId);
+
+        ResponseUpdateCommunityVo responseVo = ResponseUpdateCommunityVo.formResponseVo(responseDto.getCommunityId());
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
+    // todo: 무한스크롤로 할지, 페이징으로 처리할지 결정
+    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 가입 회원 조회")
+    @PostMapping("/{communityId}/members/list")
+    public ApiResponse<Object> getCommunityMemberList(@PathVariable Long communityId) {
+
+        // 커뮤니티id에 해당하는 커뮤니티 가입 회원 목록 조회
+        ResponseGetCommunityMemberListDto responseDto = communityService.getCommunityMemberList(communityId);
+
+        ResponseGetCommunityMemberListVo responseVo = ResponseGetCommunityMemberListVo.formResponseVo(
+                responseDto.getCommunityMemberList());
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
 //
 //    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴")
 //    @PostMapping("/{communityId}/ban-users")

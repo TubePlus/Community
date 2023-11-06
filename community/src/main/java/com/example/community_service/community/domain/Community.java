@@ -48,10 +48,10 @@ public class Community extends BaseEntity {
     // todo: communityMemberCount(1) 수정하기
     public static Community createCommunity(
             String bannerImage, String profileImage, String youtubeName,
-            String communityName, String description, String ownerUuid) {
+            String communityName, String description, String ownerUuid, Integer memberCount) {
 
         return Community.builder()
-                .communityMemberCount(1)
+                .communityMemberCount(memberCount)
                 .bannerImage(bannerImage)
                 .profileImage(profileImage)
                 .youtubeName(youtubeName)
