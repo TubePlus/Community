@@ -15,4 +15,11 @@ public class ResponseGetJoinedCommunityListVo {
 
     private List<QJoinedCommunityDto> communityList;
     private Long pageCount;
+
+    public static ResponseGetJoinedCommunityListVo formResponseVo(List<QJoinedCommunityDto> communityList, Long pageCount) {
+        return ResponseGetJoinedCommunityListVo.builder()
+                .communityList(communityList)
+                .pageCount(pageCount)
+                .build();
+    }
 }

@@ -6,7 +6,6 @@ import com.example.community_service.community.dto.response.*;
 import com.example.community_service.community.infrastructure.*;
 import com.example.community_service.global.error.ErrorCode;
 import com.example.community_service.global.error.handler.BusinessException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +31,11 @@ public class CommunityServiceImpl {
     private final EntityManager em; // QueryDsl
 
     // todo: 검색 조회 전체에 querydsl페이지네이션 구현
-    // 커뮤니티 검색(community)
+
+    /**
+     * 서비스 로직
+     * */
+    // 커뮤니티 검색
     @Transactional(readOnly = true)
     public Community searchCommunity(Long communityId) {
 
@@ -41,7 +43,7 @@ public class CommunityServiceImpl {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
     }
 
-    // 커뮤니티 회원수 업데이트(community)
+    // 커뮤니티 회원수 업데이트
     public void updateCommunityMemberCount(Long communityId, Integer memberCount) {
 
         Optional<Community> community = communityRepository.findById(communityId);
@@ -53,6 +55,7 @@ public class CommunityServiceImpl {
         );
     }
 
+    // todo: 따로 빼야할지도? 커뮤니티랑 커뮤니티맴버 둘다 사용하기 때문에
     // 가입한 커뮤니티 목록 조회하기
     @Transactional(readOnly = true)
 
@@ -106,8 +109,7 @@ public class CommunityServiceImpl {
     public ResponseGetCommunityInfoDto getCommunityInfo(Long communityId) {
 
         // 커뮤니티 검색
-        Community targetCommunity = communityRepository.findById(communityId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
+        Community targetCommunity = searchCommunity(communityId);
 
         return ResponseGetCommunityInfoDto.builder()
                 .ownerUuid(targetCommunity.getOwnerUuid())
@@ -176,16 +178,10 @@ public class CommunityServiceImpl {
 
     public ResponseCreateCommunityDto createCommunity(RequestCreateCommunityDto requestDto) {
 
-        // todo: 일단 사용하지 않는 것으로 가정하고 주석처리
-//        // User 도메인 API(서버간 통신)
-//        if (youtubeService.checkCreator(requestDto.getOwnerUuid())) {
-//            throw new BusinessException(ErrorCode.BAD_REQUEST);
-//        }
-
         // 커뮤니티 생성
         Community community = Community.createCommunity(
                 requestDto.getBannerImage(), requestDto.getProfileImage(), requestDto.getYoutubeName(),
-                requestDto.getCommunityName(), requestDto.getDescription(), requestDto.getOwnerUuid());
+                requestDto.getCommunityName(), requestDto.getDescription(), requestDto.getOwnerUuid(), 1);
 
         Community savedCommunity = communityRepository.save(community);
 
@@ -195,27 +191,25 @@ public class CommunityServiceImpl {
     }
 
     // 커뮤니티 정보 수정
-
     public ResponseUpdateCommunityDto updateCommunity(
             RequestUpdateCommunityDto requestDto, Long communityId) {
 
-        // 커뮤니티 검색
-        Community community = communityRepository.findById(communityId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
+        // 커뮤니티 객체 불러오기
+        Community targetCommunity = searchCommunity(communityId);
 
-        community.updateCommunity(
+        // 커뮤니티 정보 업데이트
+        targetCommunity.updateCommunity(
                 requestDto.getCommunityName(), requestDto.getDescription(),
                 requestDto.getProfileImage(), requestDto.getBannerImage());
 
         return ResponseUpdateCommunityDto.builder()
-                .communityId(community.getId())
+                .communityId(targetCommunity.getId())
                 .build();
     }
 
     // 커뮤니티 가입 회원 조회
 
-    public ResponseGetCommunityMemberListDto getCommunityMemberList(
-            RequestGetCommunityMemberListDto requestDto, Long communityId) {
+    public ResponseGetCommunityMemberListDto getCommunityMemberList(Long communityId) {
 
         // todo: 페이징으로 변경
         // 커뮤니티 멤버 조회

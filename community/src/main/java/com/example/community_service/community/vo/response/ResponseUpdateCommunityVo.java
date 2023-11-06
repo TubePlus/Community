@@ -10,4 +10,10 @@ import lombok.*;
 public class ResponseUpdateCommunityVo {
 
     private Long communityId;
+
+    public static ResponseUpdateCommunityVo formResponseVo(Long communityId) {
+        return ResponseUpdateCommunityVo.builder()
+                .communityId(communityId)
+                .build();
+    }
 }
