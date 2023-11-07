@@ -15,5 +15,11 @@ public class RequestBanUserDto {
 
     private String targetUuid;
     private LocalDate banEndDate;
-    private String managerUuid;
+
+    public static RequestBanUserDto formRequestDto(String targetUuid, LocalDate banEndDate) {
+        return RequestBanUserDto.builder()
+                .targetUuid(targetUuid)
+                .banEndDate(banEndDate)
+                .build();
+    }
 }

@@ -12,4 +12,10 @@ import lombok.NoArgsConstructor;
 public class ResponseCreateCommunityDto {
 
     private Long communityId;
+
+    public static ResponseCreateCommunityDto formResponseDto(Long communityId) {
+        return ResponseCreateCommunityDto.builder()
+                .communityId(communityId)
+                .build();
+    }
 }

@@ -13,4 +13,12 @@ public class ResponseDeleteManagerDto {
 
     private String managerUuid;
     private Long communityId;
+
+    public static ResponseDeleteManagerDto formResponseDto(String managerUuid, Long communityId) {
+
+        return ResponseDeleteManagerDto.builder()
+                .managerUuid(managerUuid)
+                .communityId(communityId)
+                .build();
+    }
 }

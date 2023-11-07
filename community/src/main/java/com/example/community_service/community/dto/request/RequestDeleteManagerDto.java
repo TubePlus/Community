@@ -11,6 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RequestDeleteManagerDto {
 
-    private String creatorUuid;
     private String targetUuid;
+
+    public static RequestDeleteManagerDto formRequestDto(String targetUuid) {
+        return RequestDeleteManagerDto.builder()
+                .targetUuid(targetUuid)
+                .build();
+    }
 }

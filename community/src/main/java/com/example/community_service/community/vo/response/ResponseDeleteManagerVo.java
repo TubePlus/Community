@@ -11,4 +11,12 @@ public class ResponseDeleteManagerVo {
 
     private String managerUuid;
     private Long communityId;
+
+    public static ResponseDeleteManagerVo formResponseVo(String managerUuid, Long communityId) {
+
+        return ResponseDeleteManagerVo.builder()
+                .managerUuid(managerUuid)
+                .communityId(communityId)
+                .build();
+    }
 }

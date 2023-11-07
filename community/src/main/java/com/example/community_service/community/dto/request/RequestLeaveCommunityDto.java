@@ -12,4 +12,10 @@ import lombok.NoArgsConstructor;
 public class RequestLeaveCommunityDto {
 
     private String userUuid;
+
+    public static RequestLeaveCommunityDto formRequestDto(String userUuid) {
+        return RequestLeaveCommunityDto.builder()
+                .userUuid(userUuid)
+                .build();
+    }
 }

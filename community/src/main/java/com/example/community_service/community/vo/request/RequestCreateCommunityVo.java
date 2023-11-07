@@ -21,8 +21,5 @@ public class RequestCreateCommunityVo {
     @NotNull
     private String token;
 
-    @NotNull
-    private Boolean isCreator;
-
     private String description;
 }

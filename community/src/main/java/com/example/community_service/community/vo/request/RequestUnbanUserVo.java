@@ -14,7 +14,4 @@ public class RequestUnbanUserVo {
 
     @NotNull
     private String targetUuid;
-
-    @NotNull
-    private String managerUuid;
 }

@@ -12,9 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RequestUpdateCommunityVo {
 
-    @NotNull
-    private String ownerUuid;
-
     private String bannerImage;
     private String profileImage;
     private String description;

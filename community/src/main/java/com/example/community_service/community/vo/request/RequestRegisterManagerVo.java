@@ -13,8 +13,5 @@ import lombok.NoArgsConstructor;
 public class RequestRegisterManagerVo {
 
     @NotNull
-    private String creatorUuid;
-
-    @NotNull
     private String targetUuid;
 }
