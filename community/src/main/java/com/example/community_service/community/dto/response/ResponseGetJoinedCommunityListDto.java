@@ -16,4 +16,13 @@ public class ResponseGetJoinedCommunityListDto {
 
     private List<QJoinedCommunityDto> communityList;
     private Long pageCount;
+
+    public static ResponseGetJoinedCommunityListDto formResponseDto(
+            List<QJoinedCommunityDto> communityList, Long pageCount) {
+
+            return ResponseGetJoinedCommunityListDto.builder()
+                .communityList(communityList)
+                .pageCount(pageCount)
+                .build();
+    }
 }

@@ -18,7 +18,4 @@ public class RequestBanUserVo {
     private String targetUuid;
 
     private LocalDate banEndDate; // yyyy-MM-dd
-
-    @NotNull
-    private String managerUuid;
 }

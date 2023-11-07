@@ -13,4 +13,12 @@ public class ResponseRegisterManagerDto {
 
     private Long communityId;
     private String managerUuid;
+
+    public static ResponseRegisterManagerDto formResponseDto(Long communityId, String managerUuid) {
+
+        return ResponseRegisterManagerDto.builder()
+                .communityId(communityId)
+                .managerUuid(managerUuid)
+                .build();
+    }
 }

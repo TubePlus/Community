@@ -11,6 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RequestRegisterManagerDto {
 
-    private String creatorUuid;
     private String targetUuid;
+
+    public static RequestRegisterManagerDto formRequestDto(String targetUuid) {
+
+        return RequestRegisterManagerDto.builder()
+                .targetUuid(targetUuid)
+                .build();
+    }
 }

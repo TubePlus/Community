@@ -43,12 +43,10 @@ public class CommunityController {
     public ApiResponse<Object> joinCommunity(
             @Valid @RequestBody RequestJoinCommunityVo requestVo, @PathVariable Long communityId) {
 
-        RequestJoinCommunityDto requestDto = RequestJoinCommunityDto.builder()
-                .userUuid(requestVo.getUserUuid())
-                .build();
+        RequestJoinCommunityDto requestDto = RequestJoinCommunityDto.formRequestDto(requestVo.getUserUuid());
 
         // 커뮤니티 가입 처리(가입한 회원 수 반환)
-        Integer memberCount = communityMemberService.userJoinCommunity(communityId, requestDto.getUserUuid());
+        Integer memberCount = communityMemberService.joinCommunity(communityId, requestDto.getUserUuid());
 
         // 커뮤니티 회원수 변경
         communityService.updateCommunityMemberCount(communityId, memberCount);
@@ -64,12 +62,10 @@ public class CommunityController {
     public ApiResponse<Object> leaveCommunity(
             @Valid @RequestBody RequestLeaveCommunityVo requestVo, @PathVariable Long communityId) {
 
-        RequestLeaveCommunityDto requestDto = RequestLeaveCommunityDto.builder()
-                .userUuid(requestVo.getUserUuid())
-                .build();
+        RequestLeaveCommunityDto requestDto = RequestLeaveCommunityDto.formRequestDto(requestVo.getUserUuid());
 
         // 커뮤니티 탈퇴 처리
-        Integer memberCount = communityMemberService.userLeaveCommunity(communityId, requestDto.getUserUuid());
+        Integer memberCount = communityMemberService.leaveCommunity(communityId, requestDto.getUserUuid());
 
         // 커뮤니티 회원수 변경
         communityService.updateCommunityMemberCount(communityId, memberCount);
@@ -86,13 +82,12 @@ public class CommunityController {
             @Valid @RequestBody RequestGetJoinedCommunityListVo requestVo,
             @RequestParam(defaultValue = "10") Integer count, @RequestParam(defaultValue = "0") Integer page) {
 
-        RequestGetJoinedCommunityListDto requestDto = RequestGetJoinedCommunityListDto.builder()
-                .userUuid(requestVo.getUserUuid())
-                .build();
+        RequestGetJoinedCommunityListDto requestDto = RequestGetJoinedCommunityListDto.formRequestDto(
+                requestVo.getUserUuid());
 
         // 유저가 가입한 커뮤니티 목록 조회
         ResponseGetJoinedCommunityListDto responseDto =
-                communityService.getJoinedCommunityList(requestDto.getUserUuid(), count, page);
+                communityService.getJoinedCommunityList(requestDto, count, page);
 
         ResponseGetJoinedCommunityListVo responseVo = ResponseGetJoinedCommunityListVo.formResponseVo(
                 responseDto.getCommunityList(), responseDto.getPageCount());
@@ -124,15 +119,11 @@ public class CommunityController {
         // 유튜브 API로 배너/프로필이미지/채널 이름 불러오기 기능 추가하기
         HashMap<String, String> youtubeData = youtubeService.getMyChannelInfo(requestVo.getToken());
 
-        RequestCreateCommunityDto requestDto = RequestCreateCommunityDto.builder()
-                .communityName(requestVo.getCommunityName())
-                .description(requestVo.getDescription())
-                .bannerImage(youtubeData.get("bannerImageUrl"))
-                .profileImage(youtubeData.get("profileImageUrl"))
-                .youtubeName(youtubeData.get("youtubeName"))
-                .ownerUuid(requestVo.getOwnerUuid())
-                .isCreator(requestVo.getIsCreator())
-                .build();
+        RequestCreateCommunityDto requestDto = RequestCreateCommunityDto.formRequestDto(
+                requestVo.getOwnerUuid(), requestVo.getCommunityName(), requestVo.getDescription(),
+                youtubeData.get("bannerImageUrl"), youtubeData.get("profileImageUrl"),
+                youtubeData.get("youtubeName")
+        );
 
         // 커뮤니티 생성하고 저장하기
         ResponseCreateCommunityDto responseDto = communityService.createCommunity(requestDto);
@@ -147,13 +138,10 @@ public class CommunityController {
     public ApiResponse<Object> updateCommunity(
             @Valid @RequestBody RequestUpdateCommunityVo requestVo, @PathVariable Long communityId) {
 
-        RequestUpdateCommunityDto requestDto = RequestUpdateCommunityDto.builder()
-                .communityName(requestVo.getCommunityName())
-                .description(requestVo.getDescription())
-                .profileImage(requestVo.getProfileImage())
-                .bannerImage(requestVo.getBannerImage())
-                .ownerUuid(requestVo.getOwnerUuid())
-                .build();
+        RequestUpdateCommunityDto requestDto = RequestUpdateCommunityDto.formRequestDto(
+                requestVo.getBannerImage(), requestVo.getProfileImage(),
+                requestVo.getDescription(), requestVo.getCommunityName()
+        );
 
         // 커뮤니티id에 해당하는 커뮤니티 정보 수정
         ResponseUpdateCommunityDto responseDto =
@@ -165,82 +153,71 @@ public class CommunityController {
     }
 
     // todo: 무한스크롤로 할지, 페이징으로 처리할지 결정
-    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 가입 회원 조회")
-    @PostMapping("/{communityId}/members/list")
-    public ApiResponse<Object> getCommunityMemberList(@PathVariable Long communityId) {
+//    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 가입 회원 조회")
+//    @PostMapping("/{communityId}/members/list")
+//    public ApiResponse<Object> getCommunityMemberList(@PathVariable Long communityId) {
+//
+//        // 커뮤니티id에 해당하는 커뮤니티 가입 회원 목록 조회
+//        ResponseGetCommunityMemberListDto responseDto = communityMemberService.getCommunityMemberList(communityId);
+//
+//        ResponseGetCommunityMemberListVo responseVo = ResponseGetCommunityMemberListVo.formResponseVo(
+//                responseDto.getCommunityMemberList());
+//
+//        return ApiResponse.ofSuccess(responseVo);
+//    }
 
-        // 커뮤니티id에 해당하는 커뮤니티 가입 회원 목록 조회
-        ResponseGetCommunityMemberListDto responseDto = communityService.getCommunityMemberList(communityId);
+    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴")
+    @PostMapping("/{communityId}/ban-users")
+    public ApiResponse<Object> banUser(
+            @Valid @RequestBody RequestBanUserVo requestVo, @PathVariable Long communityId) {
 
-        ResponseGetCommunityMemberListVo responseVo = ResponseGetCommunityMemberListVo.formResponseVo(
-                responseDto.getCommunityMemberList());
+        RequestBanUserDto requestDto = RequestBanUserDto.formRequestDto(
+                requestVo.getTargetUuid(), requestVo.getBanEndDate());
+
+        // uuid 해당 유저 밴 처리
+        ResponseBanUserDto responseDto = communityMemberService.banUser(communityId, requestDto);
+
+        ResponseBanUserVo responseVo = ResponseBanUserVo.formResponseVo(
+                responseDto.getCommunityId(), responseDto.getBannedUserUuid(), responseDto.getBanEndDate()
+        );
 
         return ApiResponse.ofSuccess(responseVo);
     }
-//
-//    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴")
-//    @PostMapping("/{communityId}/ban-users")
-//    public ApiResponse<Object> banUser(
-//            @Valid @RequestBody RequestBanUserVo requestVo, @PathVariable Long communityId) {
-//
-//        RequestBanUserDto requestDto = RequestBanUserDto.builder()
-//                .targetUuid(requestVo.getTargetUuid())
-//                .banEndDate(requestVo.getBanEndDate())
-//                .managerUuid(requestVo.getManagerUuid())
-//                .build();
-//
-//        ResponseBanUserDto responseDto = communityService.banUser(requestDto, communityId);
-//
-//        ResponseBanUserVo responseVo = ResponseBanUserVo.builder()
-//                .bannedUserUuid(responseDto.getBannedUserUuid())
-//                .banEndDate(responseDto.getBanEndDate())
-//                .communityId(responseDto.getCommunityId())
-//                .build();
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
-//
-//    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴 종료일 수정")
-//    @PutMapping("/{communityId}/ban-users")
-//    public ApiResponse<Object> updateBanEndDate(
-//            @Valid @RequestBody RequestUpdateBanEndDateVo requestVo, @PathVariable Long communityId) {
-//
-//        RequestUpdateBanEndDateDto requestDto = RequestUpdateBanEndDateDto.builder()
-//                .targetUuid(requestVo.getTargetUuid())
-//                .banEndDate(requestVo.getBanEndDate())
-//                .managerUuid(requestVo.getManagerUuid())
-//                .build();
-//
-//        ResponseUpdateBanEndDateDto responseDto = communityService.updateBanEndDate(requestDto, communityId);
-//
-//        ResponseUpdateBanEndDateVo responseVo = ResponseUpdateBanEndDateVo.builder()
-//                .bannedUserUuid(responseDto.getBannedUserUuid())
-//                .banEndDate(responseDto.getBanEndDate())
-//                .communityId(responseDto.getCommunityId())
-//                .build();
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
-//
-//    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴 해제")
-//    @DeleteMapping("/{communityId}/ban-users")
-//    public ApiResponse<Object> unbanUser(
-//            @Valid @RequestBody RequestUnbanUserVo requestVo, @PathVariable Long communityId) {
-//
-//        RequestUnbanUserDto requestDto = RequestUnbanUserDto.builder()
-//                .targetUuid(requestVo.getTargetUuid())
-//                .managerUuid(requestVo.getManagerUuid())
-//                .build();
-//
-//        ResponseUnbanUserDto responseDto = communityService.unbanUser(requestDto, communityId);
-//
-//        ResponseUnbanUserVo responseVo = ResponseUnbanUserVo.builder()
-//                .unbannedUuid(responseDto.getUnbannedUuid())
-//                .build();
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
-//
+
+    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴 종료일 수정")
+    @PutMapping("/{communityId}/ban-users")
+    public ApiResponse<Object> updateBanEndDate(
+            @Valid @RequestBody RequestUpdateBanEndDateVo requestVo, @PathVariable Long communityId) {
+
+        RequestUpdateBanEndDateDto requestDto = RequestUpdateBanEndDateDto.formRequestDto(
+                requestVo.getTargetUuid(), requestVo.getBanEndDate()
+        );
+
+        // uuid에 해당 하는 유저의 밴 종료일 수정
+        ResponseUpdateBanEndDateDto responseDto = communityMemberService.updateBanEndDate(communityId, requestDto);
+
+        ResponseUpdateBanEndDateVo responseVo = ResponseUpdateBanEndDateVo.formResponseVo(
+                responseDto.getBannedUserUuid(), responseDto.getBanEndDate(), responseDto.getCommunityId()
+        );
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
+    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴 해제")
+    @DeleteMapping("/{communityId}/ban-users")
+    public ApiResponse<Object> unbanUser(
+            @Valid @RequestBody RequestUnbanUserVo requestVo, @PathVariable Long communityId) {
+
+        RequestUnbanUserDto requestDto = RequestUnbanUserDto.formRequestDto(requestVo.getTargetUuid());
+
+        // uuid에 해당 하는 유저의 밴 해제
+        ResponseUnbanUserDto responseDto = communityMemberService.unbanUser(communityId, requestDto);
+
+        ResponseUnbanUserVo responseVo = ResponseUnbanUserVo.formResponseVo(responseDto.getUnbannedUuid());
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
 //    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 밴 유저 목록 조회")
 //    @PostMapping("/{communityId}/ban-users/list")
 //    public ApiResponse<Object> getBannedUserList(
@@ -259,46 +236,36 @@ public class CommunityController {
 //        return ApiResponse.ofSuccess(responseVo);
 //    }
 //
-//    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 등록")
-//    @PostMapping("/{communityId}/managers")
-//    public ApiResponse<Object> registerManager(
-//            @Valid @RequestBody RequestRegisterManagerVo requestVo, @PathVariable Long communityId) {
-//
-//        RequestRegisterManagerDto requestDto = RequestRegisterManagerDto.builder()
-//                .creatorUuid(requestVo.getCreatorUuid())
-//                .targetUuid(requestVo.getTargetUuid())
-//                .build();
-//
-//        ResponseRegisterManagerDto responseDto = communityService.registerManager(requestDto, communityId);
-//
-//        ResponseRegisterManagerVo responseVo = ResponseRegisterManagerVo.builder()
-//                .managerUuid(responseDto.getManagerUuid())
-//                .communityId(responseDto.getCommunityId())
-//                .build();
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
-//
-//    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 삭제")
-//    @DeleteMapping("/{communityId}/managers")
-//    public ApiResponse<Object> deleteManager(
-//            @Valid @RequestBody RequestDeleteManagerVo requestVo, @PathVariable Long communityId) {
-//
-//        RequestDeleteManagerDto requestDto = RequestDeleteManagerDto.builder()
-//                .creatorUuid(requestVo.getCreatorUuid())
-//                .targetUuid(requestVo.getTargetUuid())
-//                .build();
-//
-//        ResponseDeleteManagerDto responseDto = communityService.deleteManager(requestDto, communityId);
-//
-//        ResponseDeleteManagerVo responseVo = ResponseDeleteManagerVo.builder()
-//                .managerUuid(responseDto.getManagerUuid())
-//                .communityId(responseDto.getCommunityId())
-//                .build();
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
-//
+    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 등록")
+    @PostMapping("/{communityId}/managers")
+    public ApiResponse<Object> registerManager(
+            @Valid @RequestBody RequestRegisterManagerVo requestVo, @PathVariable Long communityId) {
+
+        RequestRegisterManagerDto requestDto = RequestRegisterManagerDto.formRequestDto(requestVo.getTargetUuid());
+
+        ResponseRegisterManagerDto responseDto = communityMemberService.registerManager(communityId, requestDto);
+
+        ResponseRegisterManagerVo responseVo = ResponseRegisterManagerVo.formResponseVo(
+                responseDto.getCommunityId(), responseDto.getManagerUuid());
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
+    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 삭제")
+    @DeleteMapping("/{communityId}/managers")
+    public ApiResponse<Object> deleteManager(
+            @Valid @RequestBody RequestDeleteManagerVo requestVo, @PathVariable Long communityId) {
+
+        RequestDeleteManagerDto requestDto = RequestDeleteManagerDto.formRequestDto(requestVo.getTargetUuid());
+
+        ResponseDeleteManagerDto responseDto = communityMemberService.deleteManager(communityId, requestDto);
+
+        ResponseDeleteManagerVo responseVo = ResponseDeleteManagerVo.formResponseVo(
+                responseDto.getManagerUuid(), responseDto.getCommunityId());
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
 //    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 목록 조회")
 //    @PostMapping("/{communityId}/managers/list")
 //    public ApiResponse<Object> getManagerList(

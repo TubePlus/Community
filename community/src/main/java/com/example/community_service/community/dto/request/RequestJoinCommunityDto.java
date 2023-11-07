@@ -12,4 +12,11 @@ import lombok.NoArgsConstructor;
 public class RequestJoinCommunityDto {
 
     private String userUuid;
+
+    public static RequestJoinCommunityDto formRequestDto(String userUuid) {
+
+        return RequestJoinCommunityDto.builder()
+                .userUuid(userUuid)
+                .build();
+    }
 }

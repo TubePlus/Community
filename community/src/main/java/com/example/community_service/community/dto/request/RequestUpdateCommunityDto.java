@@ -11,9 +11,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RequestUpdateCommunityDto {
 
-    private String ownerUuid;
     private String bannerImage;
     private String profileImage;
     private String description;
     private String communityName;
+
+    public static RequestUpdateCommunityDto formRequestDto(
+            String bannerImage, String profileImage, String description, String communityName) {
+
+            return RequestUpdateCommunityDto.builder()
+                .bannerImage(bannerImage)
+                .profileImage(profileImage)
+                .description(description)
+                .communityName(communityName)
+                .build(); }
 }

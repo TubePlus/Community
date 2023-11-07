@@ -12,4 +12,11 @@ import lombok.NoArgsConstructor;
 public class ResponseUnbanUserDto {
 
     private String unbannedUuid;
+
+    public static ResponseUnbanUserDto formResponseDto(String unbannedUuid) {
+
+        return ResponseUnbanUserDto.builder()
+                .unbannedUuid(unbannedUuid)
+                .build();
+    }
 }

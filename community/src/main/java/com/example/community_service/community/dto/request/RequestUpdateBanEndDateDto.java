@@ -14,6 +14,12 @@ import java.time.LocalDate;
 public class RequestUpdateBanEndDateDto {
 
     private String targetUuid;
-    private String managerUuid;
     private LocalDate banEndDate;
+
+    public static RequestUpdateBanEndDateDto formRequestDto(String targetUuid, LocalDate banEndDate) {
+        return RequestUpdateBanEndDateDto.builder()
+                .targetUuid(targetUuid)
+                .banEndDate(banEndDate)
+                .build();
+    }
 }

@@ -17,7 +17,5 @@ public class RequestUpdateBanEndDateVo {
     @NotNull
     private String targetUuid;
 
-    @NotNull
-    private String managerUuid;
     private LocalDate banEndDate; // yyyy-MM-dd
 }

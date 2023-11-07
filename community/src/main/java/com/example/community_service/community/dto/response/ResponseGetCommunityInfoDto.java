@@ -23,4 +23,23 @@ public class ResponseGetCommunityInfoDto {
     private Integer communityMemberCount;
     private LocalDate createdDate;
     private LocalDate updatedDate;
+
+    public static ResponseGetCommunityInfoDto formResponseDto(
+            Long communityId, String ownerUuid, String bannerImage,
+            String profileImage, String youtubeName, String communityName, String description,
+            Integer communityMemberCount, LocalDate createdDate, LocalDate updatedDate) {
+
+        return ResponseGetCommunityInfoDto.builder()
+                .communityId(communityId)
+                .ownerUuid(ownerUuid)
+                .bannerImage(bannerImage)
+                .profileImage(profileImage)
+                .youtubeName(youtubeName)
+                .communityName(communityName)
+                .description(description)
+                .communityMemberCount(communityMemberCount)
+                .createdDate(createdDate)
+                .updatedDate(updatedDate)
+                .build();
+    }
 }

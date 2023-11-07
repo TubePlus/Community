@@ -11,6 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RequestDeleteManagerVo {
 
-    private String creatorUuid;
     private String targetUuid;
 }

@@ -16,4 +16,14 @@ public class ResponseUpdateBanEndDateDto {
     private Long communityId;
     private String bannedUserUuid;
     private LocalDate banEndDate;
+
+    public static ResponseUpdateBanEndDateDto formResponseDto(
+            Long communityId, String bannedUserUuid, LocalDate banEndDate) {
+
+        return ResponseUpdateBanEndDateDto.builder()
+                .communityId(communityId)
+                .bannedUserUuid(bannedUserUuid)
+                .banEndDate(banEndDate)
+                .build();
+    }
 }

@@ -14,4 +14,12 @@ public class ResponseBanUserVo {
     private Long communityId;
     private String bannedUserUuid;
     private LocalDate banEndDate;
+
+    public static ResponseBanUserVo formResponseVo(Long communityId, String bannedUserUuid, LocalDate banEndDate) {
+        return ResponseBanUserVo.builder()
+                .communityId(communityId)
+                .bannedUserUuid(bannedUserUuid)
+                .banEndDate(banEndDate)
+                .build();
+    }
 }
