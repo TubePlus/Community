@@ -21,5 +21,5 @@ public class QJoinedCommunityDto {
     private String communityName;
     private String description;
     private String youtubeName;
-    private Integer communitySize;
+    private Integer communityMemberCount;
 }

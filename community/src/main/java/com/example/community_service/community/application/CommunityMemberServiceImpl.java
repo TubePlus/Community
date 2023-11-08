@@ -1,6 +1,5 @@
 package com.example.community_service.community.application;
 
-import com.example.community_service.community.domain.Community;
 import com.example.community_service.community.domain.CommunityMember;
 import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
@@ -23,7 +22,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     private final CommunityMemberRepository communityMemberRepository;
 
-    // 유저 커뮤니티 가입
+    // 유저 커뮤니티 신규 가입
     @Override
     public Integer joinCommunity(Long communityId, String userUuid) {
 
@@ -34,12 +33,29 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
         return getCommunityMemberCount(communityId).intValue();
     }
 
-    // 유저 커뮤니티 탈퇴
+    // 탈퇴 유저 커뮤니티 재가입
+    @Override
+    public Integer rejoinCommunity(Long communityId, String userUuid) {
+
+        // 유저 정보 불러오기
+        CommunityMember member = getUserInfo(communityId, userUuid);
+
+        // 해당 유저 활성화 처리
+        member.rejoinCommunity();
+
+        // 커뮤니티 유저 수 반환
+        return getCommunityMemberCount(communityId).intValue();
+    }
+
+    // 유저 커뮤니티 탈퇴(커뮤니티 내 계정 비활성화 처리)
     @Override
     public Integer leaveCommunity(Long communityId, String userUuid) {
 
-        // 유저 정보 삭제
-        deleteCommunityMember(communityId, userUuid);
+        // 유저 정보 불러오기
+        CommunityMember member = getUserInfo(communityId, userUuid);
+
+        // 해당 유저 비활성화 처리
+        member.leaveCommunity();
 
         // 커뮤니티 유저 수 반환
         return getCommunityMemberCount(communityId).intValue();
@@ -126,7 +142,8 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
     @Override
     public void createCommunityMember(String userUuid, Long communityId) {
 
-        CommunityMember joinedMember = CommunityMember.joinCommunity(communityId, userUuid);
+        CommunityMember joinedMember = CommunityMember.joinCommunity(
+                communityId, userUuid, false, false, false, true);
         communityMemberRepository.save(joinedMember);
     }
 
@@ -135,15 +152,15 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
     @Transactional(readOnly = true)
     public Long getCommunityMemberCount(Long communityId) {
 
-        return communityMemberRepository.countByCommunityId(communityId);
+        return communityMemberRepository.countByCommunityIdAndAndIsActiveTrue(communityId);
     }
 
-    // 커뮤니티 회원 삭제
+    // 유저 가입 이력 확인
     @Override
-    public void deleteCommunityMember(Long communityId, String userUuid) {
+    @Transactional(readOnly = true)
+    public Boolean checkMemberJoinHistory(Long communityId, String userUuid) {
 
-        communityMemberRepository.deleteCommunityMemberByCommunityIdAndUserUuid(communityId, userUuid)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_USER));
+        return communityMemberRepository.existsByCommunityIdAndUserUuid(communityId, userUuid);
     }
 
     // 유저 정보 불러오기

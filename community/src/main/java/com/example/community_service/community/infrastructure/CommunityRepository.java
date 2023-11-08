@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CommunityRepository extends JpaRepository<Community, Long> {
 
+    Boolean existsByCommunityName(String communityName);
+    Boolean existsByOwnerUuid(String ownerUuid);
 }

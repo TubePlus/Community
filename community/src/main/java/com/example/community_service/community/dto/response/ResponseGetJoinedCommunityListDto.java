@@ -15,14 +15,14 @@ import java.util.List;
 public class ResponseGetJoinedCommunityListDto {
 
     private List<QJoinedCommunityDto> communityList;
-    private Long pageCount;
+    private Long totalPageCount;
 
     public static ResponseGetJoinedCommunityListDto formResponseDto(
-            List<QJoinedCommunityDto> communityList, Long pageCount) {
+            List<QJoinedCommunityDto> communityList, Long totalPageCount) {
 
             return ResponseGetJoinedCommunityListDto.builder()
                 .communityList(communityList)
-                .pageCount(pageCount)
+                .totalPageCount(totalPageCount)
                 .build();
     }
 }
