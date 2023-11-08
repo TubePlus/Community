@@ -47,12 +47,35 @@ public class CommunityMember extends BaseEntity { // todo: 이름 변경(복수)
     @Column(nullable = false, name = "is_membership_user")
     private Boolean isMembershipUser;
 
+    // 탈퇴여부
+    @Column(nullable = false, name = "is_active")
+    private Boolean isActive;
+
     // 유저 커뮤니티 가입
-    public static CommunityMember joinCommunity(Long communityId, String userUuid) {
+    public static CommunityMember joinCommunity(
+            Long communityId, String userUuid, Boolean isBanned,
+            Boolean isManager, Boolean isMembershipUser, Boolean isActive) {
+
         return CommunityMember.builder()
                 .communityId(communityId)
                 .userUuid(userUuid)
+                .isBanned(isBanned)
+                .isManager(isManager)
+                .isMembershipUser(isMembershipUser)
+                .isActive(isActive)
                 .build();
+    }
+
+    // 유저 커뮤니티 탈퇴(비활성화 처리)
+    public void leaveCommunity() {
+
+        this.isActive = false;
+    }
+
+    // 유저 커뮤니티 재가입(활성화 처리)
+    public void rejoinCommunity() {
+
+        this.isActive = true;
     }
 
     // 유저 밴 처리

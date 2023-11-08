@@ -22,14 +22,17 @@ public interface CommunityMemberService {
     // 커뮤니티 회원 생성(가입)
     void createCommunityMember(String userUuid, Long communityId);
 
-    // 커뮤니티 회원 삭제(탈퇴)
-    void deleteCommunityMember(Long communityId, String userUuid);
-
     // 커뮤니티의 회원수 조회
     Long getCommunityMemberCount(Long communityId);
 
     // 커뮤니티의 특정 유저 정보 불러오기
     CommunityMember getUserInfo(Long communityId, String userUuid);
+
+    // 커뮤니티 유저 가입 이력 조회
+    Boolean checkMemberJoinHistory(Long communityId, String userUuid);
+
+    // 커뮤니티 회원 재가입
+    Integer rejoinCommunity(Long communityId, String userUuid);
     
     /**
      * 커뮤니티의 유저 밴 관련
@@ -54,6 +57,7 @@ public interface CommunityMemberService {
 
     // 커뮤니티 매니저 해제 처리
     ResponseDeleteManagerDto deleteManager(Long communityId, RequestDeleteManagerDto requestDto);
+
 
 
 

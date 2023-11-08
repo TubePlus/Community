@@ -4,6 +4,7 @@ import com.example.community_service.community.domain.*;
 import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
 import com.example.community_service.community.infrastructure.*;
+import com.example.community_service.community.vo.response.ResponseCheckVo;
 import com.example.community_service.global.error.ErrorCode;
 import com.example.community_service.global.error.handler.BusinessException;
 import com.querydsl.core.types.Projections;
@@ -34,7 +35,7 @@ public class CommunityServiceImpl implements CommunityService {
     @Transactional(readOnly = true)
     @Override
     public ResponseGetJoinedCommunityListDto getJoinedCommunityList(
-            RequestGetJoinedCommunityListDto requestDto, Integer count, Integer page) {
+            RequestGetJoinedCommunityListDto requestDto, Integer size, Integer page) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
         QCommunity c = QCommunity.community;
@@ -42,7 +43,8 @@ public class CommunityServiceImpl implements CommunityService {
 
         page -= 1; // 페이지는 0부터 시작
 
-        // todo: 쿼리 최적화 필요
+        //todo: 쿼리 최적화 필요
+        // 제로오프셋(조건문 걸어서)
         List<QJoinedCommunityDto> communityList = queryFactory
                 .select(Projections.fields(QJoinedCommunityDto.class,
                         c.id.as("communityId"),
@@ -57,21 +59,22 @@ public class CommunityServiceImpl implements CommunityService {
                 .join(m).on(c.id.eq(m.communityId)) // 커뮤니티 테이블과 커뮤니티 멤버 테이블 조인
                 .where(m.userUuid.eq(requestDto.getUserUuid())) // 커뮤니티 멤버 데이터 중 uuid가 일치하는 데이터만 조회
                 .orderBy(m.updatedDate.desc()) // 마지막 업데이트 순으로 정렬
-                .offset((long) count * page) // 시작 지점
-                .limit(count) // 시작 지점부터 몇 개 가져올지 설정
+                .offset((long) size * page) // 시작 지점
+                .limit(size) // 시작 지점부터 몇 개 가져올지 설정
                 .fetch();
 
-        // 전체 갯수 카운팅
+        // 전체 데이터 갯수 카운팅
         Long countQuery = queryFactory
                 .select(m.count())
                 .from(m)
                 .where(m.userUuid.eq(requestDto.getUserUuid()))
                 .fetchFirst();
 
+        // todo: Math.ceil() 수정 필요. 2.0일 경우 2페이지가 나와야하는데 3페이지가 나옴
         // 페이지 갯수 카운팅
-        Long pageCount = (long) Math.ceil((double) countQuery / count);
+        Long totalPageCount = (long) Math.ceil((double) countQuery / size);
 
-        return ResponseGetJoinedCommunityListDto.formResponseDto(communityList, pageCount);
+        return ResponseGetJoinedCommunityListDto.formResponseDto(communityList, totalPageCount);
     }
 
     // 커뮤니티 상세 조회하기
@@ -98,7 +101,7 @@ public class CommunityServiceImpl implements CommunityService {
         // 커뮤니티 생성
         Community community = Community.createCommunity(
                 requestDto.getBannerImage(), requestDto.getProfileImage(), requestDto.getYoutubeName(),
-                requestDto.getCommunityName(), requestDto.getDescription(), requestDto.getOwnerUuid(), 1);
+                requestDto.getCommunityName(), requestDto.getDescription(), requestDto.getOwnerUuid(), 0);
 
         // 커뮤니티 저장
         Community savedCommunity = communityRepository.save(community);
@@ -134,6 +137,14 @@ public class CommunityServiceImpl implements CommunityService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
     }
 
+    // 커뮤니티 존재 여부 체크
+    @Transactional(readOnly = true)
+    @Override
+    public Boolean checkCommunityExistence(String userUuid) {
+
+        return communityRepository.existsByOwnerUuid(userUuid);
+    }
+
     // 커뮤니티 회원수 업데이트
     @Override
     public void updateCommunityMemberCount(Long communityId, Integer memberCount) {
@@ -143,6 +154,14 @@ public class CommunityServiceImpl implements CommunityService {
 
         // 커뮤니티 회원수 업데이트
         community.updateCommunityMemberCount(memberCount);
+    }
+
+    // 커뮤니티 이름 중복 여부 조회
+    @Transactional(readOnly = true)
+    @Override
+    public Boolean isCommunityNameDuplicate(String communityName) {
+
+        return communityRepository.existsByCommunityName(communityName);
     }
 
     // 유저 밴

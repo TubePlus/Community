@@ -18,8 +18,9 @@ public class RequestCreateCommunityDto {
     private String profileImage;
     private String youtubeName;
 
-    public static RequestCreateCommunityDto formRequestDto(String ownerUuid, String communityName, String description,
-           String bannerImage, String profileImage, String youtubeName) {
+    public static RequestCreateCommunityDto formRequestDto(
+            String ownerUuid, String communityName, String description,
+            String bannerImage, String profileImage, String youtubeName) {
 
         return RequestCreateCommunityDto.builder()
                 .ownerUuid(ownerUuid)
