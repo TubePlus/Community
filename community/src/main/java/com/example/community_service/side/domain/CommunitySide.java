@@ -1,6 +1,5 @@
 package com.example.community_service.side.domain;
 
-import com.example.community_service.community.domain.Community;
 import jakarta.persistence.*;
 import lombok.*;
 

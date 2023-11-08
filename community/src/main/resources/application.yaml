@@ -1,5 +1,5 @@
 server:
-  port: 8001
+  port: 0
   shutdown: graceful
 
 management:
@@ -19,7 +19,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -29,20 +29,20 @@ spring:
       dialect: org.hibernate.dialect.MySQL5Dialect
     open-in-view: true # false 할지 조원과 상의
 
-#springdoc:
-#  swagger-ui:
-#    path: /swagger-ui.html
-#    groups-order: DESC
-#    operations-sorter: method
-#    disable-swagger-default-url: true
-#    display-request-duration: true
-#  api-docs:
-#    path: /api-docs
-#  show-actuator: true
-#  default-consumes-media-type: application/json
-#  default-produces-media-type: application/json
-#  paths-to-match:
-#    - /api/v1/**
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    groups-order: DESC
+    operations-sorter: method
+    disable-swagger-default-url: true
+    display-request-duration: true
+  api-docs:
+    path: /api-docs
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  paths-to-match:
+    - /api/v1/**
 
 
 

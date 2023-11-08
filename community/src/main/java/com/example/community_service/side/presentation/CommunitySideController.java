@@ -45,7 +45,7 @@ public class CommunitySideController {
     @Tag(name = "커뮤니티 사이드") @Operation(summary = "커뮤니티 사이드 이미지 생성")
     @PostMapping("/{communityId}/side/r/image")
     public ApiResponse<Object> createCommunitySideImage(
-            @RequestParam Long communityId,
+            @PathVariable Long communityId,
             @RequestBody CommunitySideCreateImageRequest request){
         CommunitySideDto communitySideDto = CommunitySideDto.builder()
                 .sideOrder(request.getSideOrder())
@@ -61,8 +61,8 @@ public class CommunitySideController {
 //    @Tag(name = "커뮤니티 사이드") @Operation(summary = "커뮤니티 사이드 드롭다운 수정")
 //    @PutMapping("/{communityId}/side/{communitySideId}/r/dropdown")
 //    public ApiResponse<Object> updateCommunitySideDropdown(
-//            @RequestParam Long communityId,
-//            @RequestParam Long communitySideId,
+//            @PathVariable Long communityId,
+//            @PathVariable Long communitySideId,
 //            @RequestBody CommunitySideUpdateDropdownRequest request){
 //        CommunitySideDto communitySideDto = CommunitySideDto.builder()
 //                .sideOrder(request.getSideOrder())
@@ -77,8 +77,8 @@ public class CommunitySideController {
     @Tag(name = "커뮤니티 사이드") @Operation(summary = "커뮤니티 사이드 드롭다운 삭제")
     @DeleteMapping("/{communityId}/side/{communitySideId}/r/dropdown")
     public ApiResponse<Object> deleteCommunitySideDropdown(
-            @RequestParam Long communityId,
-            @RequestParam Long communitySideId,
+            @PathVariable Long communityId,
+            @PathVariable Long communitySideId,
             @RequestBody DropdownSideDeleteRequest request
     ){
         communitySideService.deleteCommunitySide(communitySideId, communityId);
@@ -88,8 +88,8 @@ public class CommunitySideController {
     @Tag(name = "커뮤니티 사이드") @Operation(summary = "커뮤니티 사이드 이미지 삭제")
     @DeleteMapping("/{communityId}/side/{communitySideId}/r/image")
     public ApiResponse<Object> deleteCommunitySideImage(
-            @RequestParam Long communityId,
-            @RequestParam Long communitySideId,
+            @PathVariable Long communityId,
+            @PathVariable Long communitySideId,
             @RequestBody ImageLinkDeleteRequest request
     ){
         communitySideService.deleteCommunitySide(communitySideId, communityId);
@@ -100,7 +100,7 @@ public class CommunitySideController {
     @Tag(name = "커뮤니티 사이드") @Operation(summary = "커뮤니티 사이드 정보 조회")
     @GetMapping("/{communityId}/side/r")
     public ApiResponse<Object> getCommunitySide(
-            @RequestParam Long communityId
+            @PathVariable Long communityId
     ){
         return ApiResponse.ofSuccess(communitySideService.getCommunitySide(communityId));
     }
