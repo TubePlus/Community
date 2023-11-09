@@ -27,13 +27,7 @@ public class KafkaProducerConfig {
     }
     // test bean 생성 로직(테스트용)
     // input(topicName, partition, replication)
-    @Bean
-    public NewTopic topicTest() {
-        return TopicBuilder.name("topic1")
-                .partitions(10)
-                .replicas(1)
-                .build();
-    }
+
 
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate() {
