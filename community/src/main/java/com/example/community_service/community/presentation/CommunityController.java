@@ -44,6 +44,14 @@ public class CommunityController {
     // 1. 크리에이터 전환(크리에이터 전환 api)
     // 2. 크리에이터 커뮤니티 존재여부 확인 api
     // 3. 크리에이터 커뮤니티 생성(크리에이터 커뮤니티 생성 api, 크리에이터 여부도 같이 넘겨줘야함)
+
+    @Tag(name = "미분류상태/테스트중") @Operation(summary = "health check")
+    @GetMapping("/welcome")
+    public ApiResponse<Object> healthCheck() {
+
+        return ApiResponse.ofSuccess("Welcome to Community Service");
+    }
+
     @Tag(name = "미분류상태/테스트중") @Operation(summary = "해당 커뮤니티 가입 이력 조회")
     @PostMapping("/{communityId}/users/me/join-history")
     public ApiResponse<Object> checkUserJoinHistory(
