@@ -19,22 +19,14 @@ import java.util.Map;
 public class KafkaProducerConfig {
     @Bean
     public ProducerFactory<String, String> producerFactory(){
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "172.18.0.101:9092"); // kafka container host
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);// key serializer
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class); // value serializer
-        return new DefaultKafkaProducerFactory<>(configProps);
+        Map<String, Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"); // kafka container host
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);// key serializer
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class); // value serializer
+        return new DefaultKafkaProducerFactory<>(config);
     }
     // test bean 생성 로직(테스트용)
     // input(topicName, partition, replication)
-
-    @Bean
-    public NewTopic topic() {
-        return TopicBuilder.name("test2")
-                .partitions(10)
-                .replicas(1)
-                .build();
-    }
 
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate() {
