@@ -23,7 +23,12 @@ public class KafkaProducer {
             e.printStackTrace();
         }
         log.info("kafka message send :" + jsonInString);
-        kafkaTemplate.send(kafkaTopic, message);
+        try{
+            kafkaTemplate.send(kafkaTopic, message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 //    public void sendMessage : kafkaProducer.send("topicName", messageDto);
 }
