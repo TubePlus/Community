@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,12 +27,12 @@ public class CommunitySideController {
     private final CommunitySideService communitySideService;
     private final DropdownService dropdownService;
     private final ImageLinkService imageLinkService;
-    private final KafkaProducer kafkaProducer;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     // kafka test 메시지 전송 api
     @GetMapping("/side/test")
     public ApiResponse<Object> test(){
         System.out.println("test진행 중");
-        kafkaProducer.sendMessage("test", "test성공 중");
+        kafkaTemplate.send("test", "test성공 중");
         System.out.println("test진행 완료");
         return ApiResponse.ofSuccess("test");
     }
