@@ -30,7 +30,7 @@ public class KafkaProducerConfig {
 
     @Bean
     public NewTopic topic() {
-        return TopicBuilder.name("test")
+        return TopicBuilder.name("test2")
                 .partitions(10)
                 .replicas(1)
                 .build();

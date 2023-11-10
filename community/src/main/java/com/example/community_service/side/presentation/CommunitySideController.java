@@ -31,7 +31,7 @@ public class CommunitySideController {
     @GetMapping("/side/test")
     public ApiResponse<Object> test(){
         System.out.println("test진행 중");
-        kafkaProducer.sendMessage("test", "test성공 중");
+        kafkaProducer.sendMessage("test2", "test성공 중");
         System.out.println("test진행 완료");
         return ApiResponse.ofSuccess("test");
     }
