@@ -1,6 +1,8 @@
 package com.example.community_service.community.application;
 
 import com.example.community_service.community.domain.CommunityMember;
+import com.example.community_service.community.dto.BanUserDto;
+import com.example.community_service.community.dto.DeleteManagerDto;
 import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
 
@@ -38,7 +40,7 @@ public interface CommunityMemberService {
      * 커뮤니티의 유저 밴 관련
      */
     // 유저 밴 처리
-    ResponseBanUserDto banUser(Long communityId, RequestBanUserDto requestDto);
+    BanUserDto.Response banUser(Long communityId, BanUserDto.Request requestDto);
 
     // 유저 밴 종료일 업데이트
     ResponseUpdateBanEndDateDto updateBanEndDate(Long communityId, RequestUpdateBanEndDateDto requestDto);
@@ -56,7 +58,7 @@ public interface CommunityMemberService {
     ResponseRegisterManagerDto registerManager(Long communityId, RequestRegisterManagerDto requestDto);
 
     // 커뮤니티 매니저 해제 처리
-    ResponseDeleteManagerDto deleteManager(Long communityId, RequestDeleteManagerDto requestDto);
+    DeleteManagerDto.Response deleteManager(Long communityId, DeleteManagerDto.Request requestDto);
 
 
 

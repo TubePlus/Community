@@ -2,8 +2,9 @@ package com.example.community_service.community.presentation;
 
 import com.example.community_service.community.application.CommunityMemberServiceImpl;
 import com.example.community_service.community.application.CommunityServiceImpl;
+import com.example.community_service.community.application.SearchServiceImpl;
 import com.example.community_service.community.application.YoutubeService;
-import com.example.community_service.community.dto.RejoinCommunityDto;
+import com.example.community_service.community.dto.*;
 import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
 import com.example.community_service.community.vo.request.*;
@@ -15,9 +16,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 
 
 @RestController
@@ -28,6 +32,7 @@ public class CommunityController {
 
     private final CommunityServiceImpl communityService;
     private final CommunityMemberServiceImpl communityMemberService;
+    private final SearchServiceImpl searchService;
     private final YoutubeService youtubeService;
 
     /**
@@ -45,11 +50,32 @@ public class CommunityController {
     // 2. 크리에이터 커뮤니티 존재여부 확인 api
     // 3. 크리에이터 커뮤니티 생성(크리에이터 커뮤니티 생성 api, 크리에이터 여부도 같이 넘겨줘야함)
 
-    @Tag(name = "미분류상태/테스트중") @Operation(summary = "health check")
-    @GetMapping("/welcome")
+    @Tag(name = "서버 테스트") @Operation(summary = "health check")
+    @GetMapping("/server-test")
     public ApiResponse<Object> healthCheck() {
 
         return ApiResponse.ofSuccess("Welcome to Community Service");
+    }
+
+    @Tag(name = "대량 조회") @Operation(summary = "내가 가입한 커뮤니티 조회")
+    @PostMapping("/users/me/joined-communities")
+    public ApiResponse<Object> getAllJoinedCommunities(
+            @RequestBody GetJoinedCommunitiesDto.Request requestDto, Pageable pageable) {
+
+        Page<GetJoinedCommunitiesDto.Response> data =
+                searchService.getAllJoinedCommunities(requestDto, pageable);
+
+        return ApiResponse.ofSuccess(data);
+    }
+
+    @Tag(name = "대량 조회") @Operation(summary = "커뮤니티 가입 유저 목록 조회")
+    @GetMapping("/{communityId}/members/list")
+    public ApiResponse<Object> getAllCommunityUsers(@PathVariable Long communityId, Pageable pageable) {
+
+        Page<GetCommunityMemberListDto.Response> data =
+                searchService.getAllCommunityMembers(communityId, pageable);
+
+        return ApiResponse.ofSuccess(data);
     }
 
     @Tag(name = "미분류상태/테스트중") @Operation(summary = "해당 커뮤니티 가입 이력 조회")
@@ -75,8 +101,8 @@ public class CommunityController {
     public ApiResponse<Object> rejoinCommunity(
             @Valid @RequestBody RequestRejoinCommunityVo requestVo, @PathVariable Long communityId) {
 
-        RejoinCommunityDto.RequestRejoinCommunityDto requestDto =
-                RejoinCommunityDto.RequestRejoinCommunityDto.formRequestDto(requestVo.getUserUuid());
+        RejoinCommunityDto.Request requestDto =
+                RejoinCommunityDto.Request.formRequestDto(requestVo.getUserUuid());
 
         // 커뮤니티 재가입 처리(가입한 회원 수 반환)
         Integer memberCount = communityMemberService.rejoinCommunity(communityId, requestDto.getUserUuid());
@@ -84,8 +110,8 @@ public class CommunityController {
         // 커뮤니티 회원수 변경
         communityService.updateCommunityMemberCount(communityId, memberCount);
 
-        RejoinCommunityDto.ResponseRejoinCommunityDto responseDto =
-                RejoinCommunityDto.ResponseRejoinCommunityDto.formResponseDto(
+        RejoinCommunityDto.Response responseDto =
+                RejoinCommunityDto.Response.formResponseDto(
                         requestDto.getUserUuid(), communityId);
 
         ResponseRejoinCommunityVo responseVo = ResponseRejoinCommunityVo.formResponseVo(
@@ -117,6 +143,20 @@ public class CommunityController {
                 ResponseCheckVo.CheckCommunityExistenceVo.formResponseVo(existenceCheck);
 
         return ApiResponse.ofSuccess(responseVo);
+    }
+
+    @Tag(name = "미분류상태/테스트중") @Operation(summary = "크리에이터uuid들에 해당하는 커뮤니티들 조회")
+    @PostMapping("/uuids/community-list")
+    public ApiResponse<Object> getAllCommunitiesByUuid(
+            @Valid @RequestBody RequestGetCommunitiesMatchingUuidsVo requestVo) {
+
+        GetCommunitiesMatchingUuidsDto.Request requestDto = GetCommunitiesMatchingUuidsDto.Request.formRequestDto(
+                requestVo.getUuidList());
+
+        List<GetCommunitiesMatchingUuidsDto.Response> communityDataList =
+                searchService.getCommunitiesMatchingUuids(requestDto.getUuidList());
+
+        return ApiResponse.ofSuccess(communityDataList);
     }
 
     // todo: 커뮤니티 가입/탈퇴 시 해당 커뮤니티 회원수 증감은 스케줄러로 처리
@@ -158,25 +198,25 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-    // todo: 추가 테스트 필요
-    @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "가입한 커뮤니티 조회")
-    @PostMapping("/users/me")
-    public ApiResponse<Object> getJoinedCommunityList(
-            @Valid @RequestBody RequestGetJoinedCommunityListVo requestVo,
-            @RequestParam(defaultValue = "10") Integer size, @RequestParam(defaultValue = "1") Integer page) {
-
-        RequestGetJoinedCommunityListDto requestDto = RequestGetJoinedCommunityListDto.formRequestDto(
-                requestVo.getUserUuid());
-
-        // 유저가 가입한 커뮤니티 목록 조회
-        ResponseGetJoinedCommunityListDto responseDto =
-                communityService.getJoinedCommunityList(requestDto, size, page);
-
-        ResponseGetJoinedCommunityListVo responseVo = ResponseGetJoinedCommunityListVo.formResponseVo(
-                responseDto.getCommunityList(), responseDto.getTotalPageCount());
-
-        return ApiResponse.ofSuccess(responseVo);
-    }
+    // todo: 추가 테스트 필요, 주석 처리 해제
+//    @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "가입한 커뮤니티 조회")
+//    @PostMapping("/users/me")
+//    public ApiResponse<Object> getJoinedCommunityList(
+//            @Valid @RequestBody RequestGetJoinedCommunityListVo requestVo,
+//            @RequestParam(defaultValue = "10") Integer size, @RequestParam(defaultValue = "1") Integer page) {
+//
+//        RequestGetJoinedCommunityListDto requestDto = RequestGetJoinedCommunityListDto.formRequestDto(
+//                requestVo.getUserUuid());
+//
+//        // 유저가 가입한 커뮤니티 목록 조회
+//        ResponseGetJoinedCommunityListDto responseDto =
+//                communityService.getJoinedCommunityList(requestDto, size, page);
+//
+//        ResponseGetJoinedCommunityListVo responseVo = ResponseGetJoinedCommunityListVo.formResponseVo(
+//                responseDto.getCommunityList(), responseDto.getTotalPageCount());
+//
+//        return ApiResponse.ofSuccess(responseVo);
+//    }
 
     @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "커뮤니티 상세 조회")
     @GetMapping("/{communityId}/info")
@@ -202,14 +242,14 @@ public class CommunityController {
         // 유튜브 API로 배너/프로필이미지/채널 이름 불러오기 기능 추가하기
         HashMap<String, String> youtubeData = youtubeService.getMyChannelInfo(requestVo.getToken());
 
-        RequestCreateCommunityDto requestDto = RequestCreateCommunityDto.formRequestDto(
+        CreateCommunityDto.Request requestDto = CreateCommunityDto.Request.formRequestDto(
                 requestVo.getOwnerUuid(), requestVo.getCommunityName(),
                 requestVo.getDescription(), youtubeData.get("bannerImageUrl"), youtubeData.get("profileImageUrl"),
                 youtubeData.get("youtubeName")
         );
 
         // 커뮤니티 생성하고 저장하기
-        ResponseCreateCommunityDto responseDto = communityService.createCommunity(requestDto);
+        CreateCommunityDto.Response responseDto = communityService.createCommunity(requestDto);
 
         ResponseCreateCommunityVo responseVo = ResponseCreateCommunityVo.formResponseVo(responseDto.getCommunityId());
 
@@ -254,11 +294,11 @@ public class CommunityController {
     public ApiResponse<Object> banUser(
             @Valid @RequestBody RequestBanUserVo requestVo, @PathVariable Long communityId) {
 
-        RequestBanUserDto requestDto = RequestBanUserDto.formRequestDto(
+        BanUserDto.Request requestDto = BanUserDto.Request.formRequestDto(
                 requestVo.getTargetUuid(), requestVo.getBanEndDate());
 
         // uuid 해당 유저 밴 처리
-        ResponseBanUserDto responseDto = communityMemberService.banUser(communityId, requestDto);
+        BanUserDto.Response responseDto = communityMemberService.banUser(communityId, requestDto);
 
         ResponseBanUserVo responseVo = ResponseBanUserVo.formResponseVo(
                 responseDto.getCommunityId(), responseDto.getBannedUserUuid(), responseDto.getBanEndDate()
@@ -339,9 +379,9 @@ public class CommunityController {
     public ApiResponse<Object> deleteManager(
             @Valid @RequestBody RequestDeleteManagerVo requestVo, @PathVariable Long communityId) {
 
-        RequestDeleteManagerDto requestDto = RequestDeleteManagerDto.formRequestDto(requestVo.getTargetUuid());
+        DeleteManagerDto.Request requestDto = DeleteManagerDto.Request.formRequestDto(requestVo.getTargetUuid());
 
-        ResponseDeleteManagerDto responseDto = communityMemberService.deleteManager(communityId, requestDto);
+        DeleteManagerDto.Response responseDto = communityMemberService.deleteManager(communityId, requestDto);
 
         ResponseDeleteManagerVo responseVo = ResponseDeleteManagerVo.formResponseVo(
                 responseDto.getManagerUuid(), responseDto.getCommunityId());

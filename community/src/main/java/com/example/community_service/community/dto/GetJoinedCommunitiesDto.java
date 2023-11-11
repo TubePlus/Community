@@ -2,17 +2,16 @@ package com.example.community_service.community.dto;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-public class RejoinCommunityDto {
+public class GetJoinedCommunitiesDto {
 
-    @Getter
     @Builder
+    @Getter
     public static class Request {
-
         private String userUuid;
 
         public static Request formRequestDto(String userUuid) {
-
             return Request.builder()
                     .userUuid(userUuid)
                     .build();
@@ -20,18 +19,15 @@ public class RejoinCommunityDto {
     }
 
     @Getter
-    @Builder
+    @NoArgsConstructor
     public static class Response {
 
-        private String userUuid;
         private Long communityId;
-
-        public static Response formResponseDto(String userUuid, Long communityId) {
-
-            return Response.builder()
-                    .userUuid(userUuid)
-                    .communityId(communityId)
-                    .build();
-        }
+        private String ownerUuid;
+        private String profileImage;
+        private String communityName;
+        private String description;
+        private String youtubeName;
+        private Integer communityMemberCount;
     }
 }

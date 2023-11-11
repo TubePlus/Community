@@ -1,6 +1,6 @@
 package com.example.community_service.community.vo.response;
 
-import com.example.community_service.community.dto.response.QJoinedCommunityDto;
+import com.example.community_service.community.dto.GetJoinedCommunitiesDto;
 import lombok.*;
 
 
@@ -10,10 +10,10 @@ import java.util.List;
 @Builder
 public class ResponseGetJoinedCommunityListVo {
 
-    private List<QJoinedCommunityDto> communityList;
+    private List<GetJoinedCommunitiesDto> communityList;
     private Long pageCount;
 
-    public static ResponseGetJoinedCommunityListVo formResponseVo(List<QJoinedCommunityDto> communityList, Long pageCount) {
+    public static ResponseGetJoinedCommunityListVo formResponseVo(List<GetJoinedCommunitiesDto> communityList, Long pageCount) {
         return ResponseGetJoinedCommunityListVo.builder()
                 .communityList(communityList)
                 .pageCount(pageCount)
