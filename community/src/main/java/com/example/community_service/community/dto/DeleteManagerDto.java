@@ -3,18 +3,17 @@ package com.example.community_service.community.dto;
 import lombok.Builder;
 import lombok.Getter;
 
-public class RejoinCommunityDto {
+public class DeleteManagerDto {
 
     @Getter
     @Builder
     public static class Request {
 
-        private String userUuid;
+        private String targetUuid;
 
-        public static Request formRequestDto(String userUuid) {
-
+        public static Request formRequestDto(String targetUuid) {
             return Request.builder()
-                    .userUuid(userUuid)
+                    .targetUuid(targetUuid)
                     .build();
         }
     }
@@ -23,13 +22,12 @@ public class RejoinCommunityDto {
     @Builder
     public static class Response {
 
-        private String userUuid;
+        private String managerUuid;
         private Long communityId;
 
-        public static Response formResponseDto(String userUuid, Long communityId) {
-
+        public static Response formResponseDto(String managerUuid, Long communityId) {
             return Response.builder()
-                    .userUuid(userUuid)
+                    .managerUuid(managerUuid)
                     .communityId(communityId)
                     .build();
         }
