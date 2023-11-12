@@ -1,5 +1,6 @@
 package com.example.community_service.community.application;
 
+import com.example.community_service.community.dto.GetBannedMemberListDto;
 import com.example.community_service.community.dto.GetCommunitiesMatchingUuidsDto;
 import com.example.community_service.community.dto.GetCommunityMemberListDto;
 import com.example.community_service.community.dto.GetJoinedCommunitiesDto;
@@ -18,5 +19,9 @@ public interface SearchService {
     Page<GetCommunityMemberListDto.Response> getAllCommunityMembers(
             Long communityId, Pageable pageable);
 
+    // uuid 리스트에 해당하는 커뮤니티 리스트 조회
     List<GetCommunitiesMatchingUuidsDto.Response> getCommunitiesMatchingUuids(List<String> uuidList);
+
+    // 해당 커뮤니티에서 밴 된 유저 모두 조회
+    Page<GetBannedMemberListDto.Response> getAllBannedMembers(Long communityId, Pageable pageable);
 }
