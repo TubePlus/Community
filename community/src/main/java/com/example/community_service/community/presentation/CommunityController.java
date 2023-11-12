@@ -49,26 +49,16 @@ public class CommunityController {
     // 1. 크리에이터 전환(크리에이터 전환 api)
     // 2. 크리에이터 커뮤니티 존재여부 확인 api
     // 3. 크리에이터 커뮤니티 생성(크리에이터 커뮤니티 생성 api, 크리에이터 여부도 같이 넘겨줘야함)
-
-    @Tag(name = "서버 테스트") @Operation(summary = "health check")
+    @Tag(name = "서버 테스트")
+    @Operation(summary = "health check")
     @GetMapping("/server-test")
     public ApiResponse<Object> healthCheck() {
 
         return ApiResponse.ofSuccess("Welcome to Community Service");
     }
 
-    @Tag(name = "대량 조회") @Operation(summary = "내가 가입한 커뮤니티 조회")
-    @PostMapping("/users/me/joined-communities")
-    public ApiResponse<Object> getAllJoinedCommunities(
-            @RequestBody GetJoinedCommunitiesDto.Request requestDto, Pageable pageable) {
-
-        Page<GetJoinedCommunitiesDto.Response> data =
-                searchService.getAllJoinedCommunities(requestDto, pageable);
-
-        return ApiResponse.ofSuccess(data);
-    }
-
-    @Tag(name = "대량 조회") @Operation(summary = "커뮤니티 가입 유저 목록 조회")
+    @Tag(name = "데이터 검색")
+    @Operation(summary = "커뮤니티 가입 유저 목록 조회")
     @GetMapping("/{communityId}/members/list")
     public ApiResponse<Object> getAllCommunityUsers(@PathVariable Long communityId, Pageable pageable) {
 
@@ -78,7 +68,25 @@ public class CommunityController {
         return ApiResponse.ofSuccess(data);
     }
 
-    @Tag(name = "미분류상태/테스트중") @Operation(summary = "해당 커뮤니티 가입 이력 조회")
+    @Tag(name = "데이터 검색")
+    @Operation(summary = "크리에이터uuid들에 해당하는 커뮤니티들 조회")
+    @PostMapping("/uuids/community-list")
+    public ApiResponse<Object> getAllCommunitiesByUuid(
+            @Valid @RequestBody RequestGetCommunitiesMatchingUuidsVo requestVo) {
+
+        GetCommunitiesMatchingUuidsDto.Request requestDto = GetCommunitiesMatchingUuidsDto.Request.formRequestDto(
+                requestVo.getUuidList());
+
+        List<GetCommunitiesMatchingUuidsDto.Response> communityDataList =
+                searchService.getCommunitiesMatchingUuids(requestDto.getUuidList());
+
+        return ApiResponse.ofSuccess(communityDataList);
+    }
+
+    // TODO: 해당 커뮤니티의 매니저/크리에이터 권한 여부
+
+    @Tag(name = "데이터 검증 API")
+    @Operation(summary = "해당 커뮤니티 가입 이력 조회")
     @PostMapping("/{communityId}/users/me/join-history")
     public ApiResponse<Object> checkUserJoinHistory(
             @Valid @RequestBody RequestCheckVo requestVo, @PathVariable Long communityId) {
@@ -92,11 +100,39 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
+    @Tag(name = "데이터 검증 API")
+    @Operation(summary = "커뮤니티 이름 중복확인")
+    @GetMapping("{communityName}/duplicate")
+    public ApiResponse<Object> checkDuplicateCommunityName(@PathVariable String communityName) {
+
+        Boolean duplicateCheck = communityService.isCommunityNameDuplicate(communityName);
+
+        ResponseCheckVo.CommunityNameDuplicateVo responseVo =
+                ResponseCheckVo.CommunityNameDuplicateVo.formResponseVo(duplicateCheck);
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
+    @Tag(name = "데이터 검증 API")
+    @Operation(summary = "유저 소유의 커뮤니티 존재 여부 확인")
+    @PostMapping("/users/me/creator-community")
+    public ApiResponse<Object> checkCommunityExistence(
+            @Valid @RequestBody RequestCheckVo requestVo) {
+
+        Boolean existenceCheck = communityService.checkCommunityExistence(requestVo.getUserUuid());
+
+        ResponseCheckVo.CheckCommunityExistenceVo responseVo =
+                ResponseCheckVo.CheckCommunityExistenceVo.formResponseVo(existenceCheck);
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
     //todo: 커뮤니티 생성 로직
     // 1. 크리에이터 등록 api(user 서버)
     // 2. 커뮤니티 생성 api(커뮤니티 서버)
 
-    @Tag(name = "미분류상태/테스트중") @Operation(summary = "해당 커뮤니티 재가입")
+    @Tag(name = "커뮤니티 가입/탈퇴/조회")
+    @Operation(summary = "해당 커뮤니티 재가입")
     @PutMapping("/{communityId}/users/me/rejoin")
     public ApiResponse<Object> rejoinCommunity(
             @Valid @RequestBody RequestRejoinCommunityVo requestVo, @PathVariable Long communityId) {
@@ -120,47 +156,9 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-    @Tag(name = "미분류상태/테스트중") @Operation(summary = "커뮤니티 이름 중복확인")
-    @GetMapping("{communityName}/duplicate")
-    public ApiResponse<Object> checkDuplicateCommunityName(@PathVariable String communityName) {
-
-        Boolean duplicateCheck = communityService.isCommunityNameDuplicate(communityName);
-
-        ResponseCheckVo.CommunityNameDuplicateVo responseVo =
-                ResponseCheckVo.CommunityNameDuplicateVo.formResponseVo(duplicateCheck);
-
-        return ApiResponse.ofSuccess(responseVo);
-    }
-
-    @Tag(name = "미분류상태/테스트중") @Operation(summary = "유저 소유의 커뮤니티 존재 여부 확인")
-    @PostMapping("/users/me/creator-community")
-    public ApiResponse<Object> checkCommunityExistence(
-            @Valid @RequestBody RequestCheckVo requestVo) {
-
-        Boolean existenceCheck = communityService.checkCommunityExistence(requestVo.getUserUuid());
-
-        ResponseCheckVo.CheckCommunityExistenceVo responseVo =
-                ResponseCheckVo.CheckCommunityExistenceVo.formResponseVo(existenceCheck);
-
-        return ApiResponse.ofSuccess(responseVo);
-    }
-
-    @Tag(name = "미분류상태/테스트중") @Operation(summary = "크리에이터uuid들에 해당하는 커뮤니티들 조회")
-    @PostMapping("/uuids/community-list")
-    public ApiResponse<Object> getAllCommunitiesByUuid(
-            @Valid @RequestBody RequestGetCommunitiesMatchingUuidsVo requestVo) {
-
-        GetCommunitiesMatchingUuidsDto.Request requestDto = GetCommunitiesMatchingUuidsDto.Request.formRequestDto(
-                requestVo.getUuidList());
-
-        List<GetCommunitiesMatchingUuidsDto.Response> communityDataList =
-                searchService.getCommunitiesMatchingUuids(requestDto.getUuidList());
-
-        return ApiResponse.ofSuccess(communityDataList);
-    }
-
     // todo: 커뮤니티 가입/탈퇴 시 해당 커뮤니티 회원수 증감은 스케줄러로 처리
-    @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "커뮤니티 가입")
+    @Tag(name = "커뮤니티 가입/탈퇴/조회")
+    @Operation(summary = "커뮤니티 가입")
     @PostMapping("/{communityId}/users/me")
     public ApiResponse<Object> joinCommunity(
             @Valid @RequestBody RequestJoinCommunityVo requestVo, @PathVariable Long communityId) {
@@ -179,7 +177,8 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-    @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "커뮤니티 탈퇴")
+    @Tag(name = "커뮤니티 가입/탈퇴/조회")
+    @Operation(summary = "커뮤니티 탈퇴")
     @PutMapping("/{communityId}/users/me")
     public ApiResponse<Object> leaveCommunity(
             @Valid @RequestBody RequestLeaveCommunityVo requestVo, @PathVariable Long communityId) {
@@ -198,27 +197,20 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-    // todo: 추가 테스트 필요, 주석 처리 해제
-//    @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "가입한 커뮤니티 조회")
-//    @PostMapping("/users/me")
-//    public ApiResponse<Object> getJoinedCommunityList(
-//            @Valid @RequestBody RequestGetJoinedCommunityListVo requestVo,
-//            @RequestParam(defaultValue = "10") Integer size, @RequestParam(defaultValue = "1") Integer page) {
-//
-//        RequestGetJoinedCommunityListDto requestDto = RequestGetJoinedCommunityListDto.formRequestDto(
-//                requestVo.getUserUuid());
-//
-//        // 유저가 가입한 커뮤니티 목록 조회
-//        ResponseGetJoinedCommunityListDto responseDto =
-//                communityService.getJoinedCommunityList(requestDto, size, page);
-//
-//        ResponseGetJoinedCommunityListVo responseVo = ResponseGetJoinedCommunityListVo.formResponseVo(
-//                responseDto.getCommunityList(), responseDto.getTotalPageCount());
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
+    @Tag(name = "커뮤니티 가입/탈퇴/조회")
+    @Operation(summary = "내가 가입한 커뮤니티 리스트 조회")
+    @PostMapping("/users/me/joined-communities")
+    public ApiResponse<Object> getAllJoinedCommunities(
+            @RequestBody GetJoinedCommunitiesDto.Request requestDto, Pageable pageable) {
 
-    @Tag(name = "커뮤니티 가입/탈퇴/조회") @Operation(summary = "커뮤니티 상세 조회")
+        Page<GetJoinedCommunitiesDto.Response> data =
+                searchService.getAllJoinedCommunities(requestDto, pageable);
+
+        return ApiResponse.ofSuccess(data);
+    }
+
+    @Tag(name = "커뮤니티 가입/탈퇴/조회")
+    @Operation(summary = "커뮤니티 상세 조회")
     @GetMapping("/{communityId}/info")
     public ApiResponse<Object> getCommunityInfo(@PathVariable Long communityId) {
 
@@ -234,7 +226,8 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 생성")
+    @Tag(name = "커뮤니티 관리")
+    @Operation(summary = "커뮤니티 생성")
     @PostMapping("")
     public ApiResponse<Object> createCommunity(
             @Valid @RequestBody RequestCreateCommunityVo requestVo) throws JsonProcessingException {
@@ -256,7 +249,8 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 정보 수정")
+    @Tag(name = "커뮤니티 관리")
+    @Operation(summary = "커뮤니티 정보 수정")
     @PutMapping("/{communityId}/info")
     public ApiResponse<Object> updateCommunity(
             @Valid @RequestBody RequestUpdateCommunityVo requestVo, @PathVariable Long communityId) {
@@ -275,21 +269,8 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-    // todo: 무한스크롤로 할지, 페이징으로 처리할지 결정
-//    @Tag(name = "커뮤니티 관리") @Operation(summary = "커뮤니티 가입 회원 조회")
-//    @PostMapping("/{communityId}/members/list")
-//    public ApiResponse<Object> getCommunityMemberList(@PathVariable Long communityId) {
-//
-//        // 커뮤니티id에 해당하는 커뮤니티 가입 회원 목록 조회
-//        ResponseGetCommunityMemberListDto responseDto = communityMemberService.getCommunityMemberList(communityId);
-//
-//        ResponseGetCommunityMemberListVo responseVo = ResponseGetCommunityMemberListVo.formResponseVo(
-//                responseDto.getCommunityMemberList());
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
-
-    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴")
+    @Tag(name = "커뮤니티 밴 유저 관리")
+    @Operation(summary = "커뮤니티 유저 밴")
     @PutMapping("/{communityId}/ban-users")
     public ApiResponse<Object> banUser(
             @Valid @RequestBody RequestBanUserVo requestVo, @PathVariable Long communityId) {
@@ -307,7 +288,8 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴 종료일 수정")
+    @Tag(name = "커뮤니티 밴 유저 관리")
+    @Operation(summary = "커뮤니티 유저 밴 종료일 수정")
     @PutMapping("/{communityId}/ban-users-date")
     public ApiResponse<Object> updateBanEndDate(
             @Valid @RequestBody RequestUpdateBanEndDateVo requestVo, @PathVariable Long communityId) {
@@ -326,7 +308,8 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 유저 밴 해제")
+    @Tag(name = "커뮤니티 밴 유저 관리")
+    @Operation(summary = "커뮤니티 유저 밴 해제")
     @PutMapping("/{communityId}/unban-users")
     public ApiResponse<Object> unbanUser(
             @Valid @RequestBody RequestUnbanUserVo requestVo, @PathVariable Long communityId) {
@@ -341,25 +324,17 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-//    @Tag(name = "커뮤니티 밴 유저 관리") @Operation(summary = "커뮤니티 밴 유저 목록 조회")
-//    @PostMapping("/{communityId}/ban-users/list")
-//    public ApiResponse<Object> getBannedUserList(
-//            @Valid @RequestBody RequestGetBannedUserListVo requestVo, @PathVariable Long communityId) {
-//
-//        RequestGetBannedUserListDto requestDto = RequestGetBannedUserListDto.builder()
-//                .managerUuid(requestVo.getManagerUuid())
-//                .build();
-//
-//        ResponseGetBannedUserListDto responseDto = communityService.getBannedUserList(requestDto, communityId);
-//
-//        removed responseVo = removed.builder()
-//                .bannedUserList(responseDto.getBannedUserList())
-//                .build();
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
-//
-    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 등록")
+    @Tag(name = "커뮤니티 밴 유저 관리")
+    @Operation(summary = "커뮤니티 밴 유저 목록 조회")
+    @PostMapping("/{communityId}/ban-users/list")
+    public ApiResponse<Object> getBannedUserList(@PathVariable Long communityId, Pageable pageable) {
+
+        Page<GetBannedMemberListDto.Response> data = searchService.getAllBannedMembers(communityId, pageable);
+        return ApiResponse.ofSuccess(data);
+    }
+
+    @Tag(name = "커뮤니티 매니저 관리")
+    @Operation(summary = "커뮤니티 매니저 등록")
     @PutMapping("/{communityId}/new-managers")
     public ApiResponse<Object> registerManager(
             @Valid @RequestBody RequestRegisterManagerVo requestVo, @PathVariable Long communityId) {
@@ -374,7 +349,8 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 삭제")
+    @Tag(name = "커뮤니티 매니저 관리")
+    @Operation(summary = "커뮤니티 매니저 삭제")
     @PutMapping("/{communityId}/managers")
     public ApiResponse<Object> deleteManager(
             @Valid @RequestBody RequestDeleteManagerVo requestVo, @PathVariable Long communityId) {
@@ -391,14 +367,9 @@ public class CommunityController {
 
 //    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 목록 조회")
 //    @PostMapping("/{communityId}/managers/list")
-//    public ApiResponse<Object> getManagerList(
-//            @Valid @RequestBody RequestGetManagerListVo requestVo, @PathVariable Long communityId) {
+//    public ApiResponse<Object> getManagerList(@PathVariable Long communityId, Pageable pageable) {
 //
-//        RequestGetManagerListDto requestDto = RequestGetManagerListDto.builder()
-//                .creatorUuid(requestVo.getCreatorUuid())
-//                .build();
-//
-//        ResponseGetManagerListDto responseDto = communityService.getManagerList(requestDto, communityId);
+//        searchService.getAllManagers(communityId, pageable);
 //
 //        ResponseGetManagerListVo responseVo = ResponseGetManagerListVo.builder()
 //                .managerList(responseDto.getManagerList())
