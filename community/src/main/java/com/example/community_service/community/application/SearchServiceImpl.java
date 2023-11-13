@@ -2,10 +2,7 @@ package com.example.community_service.community.application;
 
 import com.example.community_service.community.domain.QCommunity;
 import com.example.community_service.community.domain.QCommunityMember;
-import com.example.community_service.community.dto.GetBannedMemberListDto;
-import com.example.community_service.community.dto.GetCommunitiesMatchingUuidsDto;
-import com.example.community_service.community.dto.GetCommunityMemberListDto;
-import com.example.community_service.community.dto.GetJoinedCommunitiesDto;
+import com.example.community_service.community.dto.*;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -132,6 +129,37 @@ public class SearchServiceImpl implements SearchService {
         JPAQuery<Long> Count = queryFactory.select(qCommunityMember.count())
                 .from(qCommunityMember)
                 .where(qCommunityMember.communityId.eq(communityId).and(qCommunityMember.isBanned.eq(true)));
+
+        return PageableExecutionUtils.getPage(fetch, pageable, Count::fetchOne);
+    }
+
+    // 해당 커뮤니티의 매니저 모두 조회
+    @Override
+    public Page<GetManagerListDto.Response> getAllManagers(Long communityId, Pageable pageable) {
+
+        QCommunityMember qCommunityMember = new QCommunityMember("communityMember");
+
+        List<GetManagerListDto.Response> fetch = queryFactory.select(
+                Projections.fields(GetManagerListDto.Response.class,
+                        qCommunityMember.userUuid,
+                        qCommunityMember.createdDate,
+                        qCommunityMember.updatedDate,
+                        qCommunityMember.isMembershipUser))
+                .from(qCommunityMember)
+                .where(qCommunityMember.communityId.eq(communityId)
+                        .and(qCommunityMember.isManager.eq(true))
+                        .and(qCommunityMember.isActive.eq(true))
+                )
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+
+        JPAQuery<Long> Count = queryFactory.select(qCommunityMember.count())
+                .from(qCommunityMember)
+                .where(qCommunityMember.communityId.eq(communityId)
+                        .and(qCommunityMember.isManager.eq(true))
+                        .and(qCommunityMember.isActive.eq(true))
+                );
 
         return PageableExecutionUtils.getPage(fetch, pageable, Count::fetchOne);
     }

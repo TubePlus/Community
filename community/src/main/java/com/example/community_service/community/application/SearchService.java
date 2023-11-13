@@ -1,9 +1,6 @@
 package com.example.community_service.community.application;
 
-import com.example.community_service.community.dto.GetBannedMemberListDto;
-import com.example.community_service.community.dto.GetCommunitiesMatchingUuidsDto;
-import com.example.community_service.community.dto.GetCommunityMemberListDto;
-import com.example.community_service.community.dto.GetJoinedCommunitiesDto;
+import com.example.community_service.community.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -24,4 +21,7 @@ public interface SearchService {
 
     // 해당 커뮤니티에서 밴 된 유저 모두 조회
     Page<GetBannedMemberListDto.Response> getAllBannedMembers(Long communityId, Pageable pageable);
+
+    // 해당 커뮤니티의 매니저 모두 조회
+    Page<GetManagerListDto.Response> getAllManagers(Long communityId, Pageable pageable);
 }
