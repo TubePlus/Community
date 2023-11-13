@@ -1,22 +1,20 @@
 package com.example.community_service.community.application;
 
 import com.example.community_service.community.domain.*;
+import com.example.community_service.community.dto.CreateCommunityDto;
 import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
 import com.example.community_service.community.infrastructure.*;
 import com.example.community_service.global.error.ErrorCode;
 import com.example.community_service.global.error.handler.BusinessException;
-import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.persistence.EntityManager;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,54 +23,8 @@ import java.util.Optional;
 public class CommunityServiceImpl implements CommunityService {
 
     private final CommunityRepository communityRepository;
-    private final EntityManager em; // QueryDsl
 
     // todo: 검색 조회 전체에 querydsl페이지네이션 구현
-    // todo: 따로 빼야할지도? 커뮤니티랑 커뮤니티맴버 둘다 사용하기 때문에
-
-    // 가입한 커뮤니티 목록 조회하기
-    @Transactional(readOnly = true)
-    @Override
-    public ResponseGetJoinedCommunityListDto getJoinedCommunityList(
-            RequestGetJoinedCommunityListDto requestDto, Integer count, Integer page) {
-
-        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        QCommunity c = QCommunity.community;
-        QCommunityMember m = QCommunityMember.communityMember;
-
-        page -= 1; // 페이지는 0부터 시작
-
-        // todo: 쿼리 최적화 필요
-        List<QJoinedCommunityDto> communityList = queryFactory
-                .select(Projections.fields(QJoinedCommunityDto.class,
-                        c.id.as("communityId"),
-                        c.ownerUuid,
-                        c.profileImage,
-                        c.communityName,
-                        c.description,
-                        c.youtubeName,
-                        c.communityMemberCount
-                ))
-                .from(c)
-                .join(m).on(c.id.eq(m.communityId)) // 커뮤니티 테이블과 커뮤니티 멤버 테이블 조인
-                .where(m.userUuid.eq(requestDto.getUserUuid())) // 커뮤니티 멤버 데이터 중 uuid가 일치하는 데이터만 조회
-                .orderBy(m.updatedDate.desc()) // 마지막 업데이트 순으로 정렬
-                .offset((long) count * page) // 시작 지점
-                .limit(count) // 시작 지점부터 몇 개 가져올지 설정
-                .fetch();
-
-        // 전체 갯수 카운팅
-        Long countQuery = queryFactory
-                .select(m.count())
-                .from(m)
-                .where(m.userUuid.eq(requestDto.getUserUuid()))
-                .fetchFirst();
-
-        // 페이지 갯수 카운팅
-        Long pageCount = (long) Math.ceil((double) countQuery / count);
-
-        return ResponseGetJoinedCommunityListDto.formResponseDto(communityList, pageCount);
-    }
 
     // 커뮤니티 상세 조회하기
     @Transactional(readOnly = true)
@@ -93,17 +45,17 @@ public class CommunityServiceImpl implements CommunityService {
 
     // 크리에이터 커뮤니티 생성
     @Override
-    public ResponseCreateCommunityDto createCommunity(RequestCreateCommunityDto requestDto) {
+    public CreateCommunityDto.Response createCommunity(CreateCommunityDto.Request requestDto) {
 
         // 커뮤니티 생성
         Community community = Community.createCommunity(
                 requestDto.getBannerImage(), requestDto.getProfileImage(), requestDto.getYoutubeName(),
-                requestDto.getCommunityName(), requestDto.getDescription(), requestDto.getOwnerUuid(), 1);
+                requestDto.getCommunityName(), requestDto.getDescription(), requestDto.getOwnerUuid(), 0);
 
         // 커뮤니티 저장
         Community savedCommunity = communityRepository.save(community);
 
-        return ResponseCreateCommunityDto.formResponseDto(savedCommunity.getId());
+        return CreateCommunityDto.Response.formResponseDto(savedCommunity.getId());
     }
 
     // 커뮤니티 정보 수정
@@ -134,6 +86,14 @@ public class CommunityServiceImpl implements CommunityService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_RESOURCE));
     }
 
+    // 커뮤니티 존재 여부 체크
+    @Transactional(readOnly = true)
+    @Override
+    public Boolean checkCommunityExistence(String userUuid) {
+
+        return communityRepository.existsByOwnerUuid(userUuid);
+    }
+
     // 커뮤니티 회원수 업데이트
     @Override
     public void updateCommunityMemberCount(Long communityId, Integer memberCount) {
@@ -145,9 +105,17 @@ public class CommunityServiceImpl implements CommunityService {
         community.updateCommunityMemberCount(memberCount);
     }
 
+    // 커뮤니티 이름 중복 여부 조회
+    @Transactional(readOnly = true)
+    @Override
+    public Boolean isCommunityNameDuplicate(String communityName) {
+
+        return communityRepository.existsByCommunityName(communityName);
+    }
+
     // 유저 밴
 
-//    public ResponseBanUserDto banUser(RequestBanUserDto requestDto, Long communityId) {
+//    public ResponseBanUserDto banUser(BanUserDto requestDto, Long communityId) {
 //
 //        // 유저 밴
 //        BannedUser targetUser = BannedUser.banUser(
