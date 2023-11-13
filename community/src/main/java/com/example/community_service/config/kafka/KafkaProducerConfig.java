@@ -20,13 +20,20 @@ public class KafkaProducerConfig {
     @Bean
     public ProducerFactory<String, String> producerFactory(){
         Map<String, Object> config = new HashMap<>();
-        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"); // kafka container host
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "34.64.149.128:9092"); // kafka container host
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);// key serializer
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class); // value serializer
         return new DefaultKafkaProducerFactory<>(config);
     }
     // test bean 생성 로직(테스트용)
     // input(topicName, partition, replication)
+    @Bean
+    public NewTopic test(){
+        return TopicBuilder.name("test")
+                .partitions(10)
+                .replicas(1)
+                .build();
+    }
 
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate() {
