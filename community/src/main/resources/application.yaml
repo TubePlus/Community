@@ -12,6 +12,8 @@ management:
       enabled: true
 
 spring:
+  producers:
+    bootstrap-servers: plaintext://localhost:9092,plaintext://localhost:9093,plaintext://localhost:9094
   profiles:
     active: local
   application:
