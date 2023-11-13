@@ -1,6 +1,6 @@
 package com.example.community_service.community.dto.response;
 
-import com.querydsl.core.Tuple;
+import com.example.community_service.community.dto.GetJoinedCommunitiesDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,15 +14,15 @@ import java.util.List;
 @AllArgsConstructor
 public class ResponseGetJoinedCommunityListDto {
 
-    private List<QJoinedCommunityDto> communityList;
-    private Long pageCount;
+    private List<GetJoinedCommunitiesDto> communityList;
+    private Long totalPageCount;
 
     public static ResponseGetJoinedCommunityListDto formResponseDto(
-            List<QJoinedCommunityDto> communityList, Long pageCount) {
+            List<GetJoinedCommunitiesDto> communityList, Long totalPageCount) {
 
             return ResponseGetJoinedCommunityListDto.builder()
                 .communityList(communityList)
-                .pageCount(pageCount)
+                .totalPageCount(totalPageCount)
                 .build();
     }
 }

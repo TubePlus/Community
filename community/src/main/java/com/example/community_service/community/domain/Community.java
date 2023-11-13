@@ -67,15 +67,6 @@ public class Community extends BaseEntity {
         this.profileImage = profileImage;
     }
 
-    // todo: 특정한 조건에 의해 변경되는 값이기 때문에 비즈니스 로직으로 빼기(도메인 로직 아님)
-    public void increaseCommunitySize() {
-        this.communityMemberCount++;
-    }
-
-    public void decreaseCommunitySize() {
-        this.communityMemberCount--;
-    }
-
     public void updateCommunityMemberCount(Integer communityMemberCount) {
         this.communityMemberCount = communityMemberCount;
     }

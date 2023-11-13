@@ -13,6 +13,5 @@ public interface CommunityMemberRepository extends JpaRepository<CommunityMember
     Optional<CommunityMember> findByCommunityIdAndUserUuid(Long communityId, String userUuid);
     List<CommunityMember> findAllByCommunityId(Long communityId);
     Boolean existsByCommunityIdAndUserUuid(Long communityId, String userUuid);
-    Optional<CommunityMember> deleteCommunityMemberByCommunityIdAndUserUuid(Long communityId, String userUuid);
-    Long countByCommunityId(Long communityId);
+    Long countByCommunityIdAndAndIsActiveTrue(Long communityId);
 }
