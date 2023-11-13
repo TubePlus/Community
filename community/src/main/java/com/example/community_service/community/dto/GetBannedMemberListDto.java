@@ -3,7 +3,7 @@ package com.example.community_service.community.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class GetBannedMemberListDto {
 
@@ -12,9 +12,9 @@ public class GetBannedMemberListDto {
     public static class Response {
 
         private String userUuid;
-        private LocalDate createdDate;
-        private LocalDate updatedDate;
-        private LocalDate banEndDate;
+        private LocalDateTime createdDate;
+        private LocalDateTime updatedDate;
+        private LocalDateTime banEndDate;
         private Boolean isMembershipUser;
     }
 }

@@ -326,7 +326,7 @@ public class CommunityController {
 
     @Tag(name = "커뮤니티 밴 유저 관리")
     @Operation(summary = "커뮤니티 밴 유저 목록 조회")
-    @PostMapping("/{communityId}/ban-users/list")
+    @GetMapping("/{communityId}/ban-users/list")
     public ApiResponse<Object> getBannedUserList(@PathVariable Long communityId, Pageable pageable) {
 
         Page<GetBannedMemberListDto.Response> data = searchService.getAllBannedMembers(communityId, pageable);
@@ -365,16 +365,12 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
-//    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 목록 조회")
-//    @PostMapping("/{communityId}/managers/list")
-//    public ApiResponse<Object> getManagerList(@PathVariable Long communityId, Pageable pageable) {
-//
-//        searchService.getAllManagers(communityId, pageable);
-//
-//        ResponseGetManagerListVo responseVo = ResponseGetManagerListVo.builder()
-//                .managerList(responseDto.getManagerList())
-//                .build();
-//
-//        return ApiResponse.ofSuccess(responseVo);
-//    }
+    @Tag(name = "커뮤니티 매니저 관리") @Operation(summary = "커뮤니티 매니저 목록 조회")
+    @GetMapping("/{communityId}/managers/list")
+    public ApiResponse<Object> getManagerList(@PathVariable Long communityId, Pageable pageable) {
+
+        Page<GetManagerListDto.Response> data = searchService.getAllManagers(communityId, pageable);
+
+        return ApiResponse.ofSuccess(data);
+    }
 }
