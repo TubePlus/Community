@@ -32,6 +32,9 @@ public interface CommunityService { // todo: 인터페이스 도메인별로 구
     // 해당 유저의 커뮤니티 소유여부 확인
     Boolean checkCommunityExistence(String userUuid);
 
+    // 해당 유저의 커뮤니티 id 조회
+    Long getCommunityIdByOwnerUuid(String userUuid);
+
     /**
      * 커뮤니티 업데이트 관련
      */
