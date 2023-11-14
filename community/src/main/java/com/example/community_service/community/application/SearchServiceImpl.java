@@ -7,6 +7,8 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -59,6 +61,9 @@ public class SearchServiceImpl implements SearchService {
     // todo: 최적화하기
     // 커뮤니티에 가입된 유저 모두 조회
     @Override
+//    @Cacheable(value = "communityMembers", key = "{#communityId, #pageable.pageNumber, #pageable.pageSize}",
+//            cacheManager = "redisCacheManager")
+
     public Page<GetCommunityMemberListDto.Response> getAllCommunityMembers(
             Long communityId, Pageable pageable) {
 
