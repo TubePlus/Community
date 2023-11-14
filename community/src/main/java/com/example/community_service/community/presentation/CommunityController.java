@@ -101,6 +101,18 @@ public class CommunityController {
     }
 
     @Tag(name = "데이터 검증 API")
+    @Operation(summary = "유저 소유의 커뮤니티 id 조회")
+    @PostMapping("/users/me/creator-community-id")
+    public ApiResponse<Object> getCreatorCommunityId(@Valid @RequestBody RequestGetCommunityIdVo requestVo) {
+
+        Long communityId = communityService.getCommunityIdByOwnerUuid(requestVo.getUserUuid());
+        ResponseGetCommunityIdVo responseVo = ResponseGetCommunityIdVo.formResponseVo(communityId);
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
+
+    @Tag(name = "데이터 검증 API")
     @Operation(summary = "커뮤니티 이름 중복확인")
     @GetMapping("{communityName}/duplicate")
     public ApiResponse<Object> checkDuplicateCommunityName(@PathVariable String communityName) {

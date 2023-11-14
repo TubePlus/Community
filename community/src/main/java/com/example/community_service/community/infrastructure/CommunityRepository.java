@@ -10,4 +10,5 @@ public interface CommunityRepository extends JpaRepository<Community, Long> {
 
     Boolean existsByCommunityName(String communityName);
     Boolean existsByOwnerUuid(String ownerUuid);
+    Community findByOwnerUuid(String ownerUuid);
 }
