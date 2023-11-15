@@ -13,7 +13,7 @@ management:
 
 spring:
   producers:
-    bootstrap-servers: plaintext://localhost:9092
+    bootstrap-servers: plaintext://kafka1:9092,plaintext://kafka2:9092,plaintext://kafka3:9092
   profiles:
     active: local
   application:
