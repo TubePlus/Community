@@ -1,3 +1,4 @@
+
 package com.example.community_service.config.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
