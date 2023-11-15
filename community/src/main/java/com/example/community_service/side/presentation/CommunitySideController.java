@@ -1,22 +1,18 @@
 package com.example.community_service.side.presentation;
 
-//import com.example.community_service.config.kafka.KafkaProducer;
+import com.example.community_service.config.kafka.KafkaProducer;
 import com.example.community_service.global.base.ApiResponse;
 import com.example.community_service.side.application.CommunitySideService;
 import com.example.community_service.side.application.DropdownService;
 import com.example.community_service.side.application.ImageLinkService;
 import com.example.community_service.side.dto.CommunitySideDto;
 import com.example.community_service.side.vo.request.*;
-import com.example.community_service.side.vo.response.GetCommunitySideResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -26,12 +22,12 @@ public class CommunitySideController {
     private final CommunitySideService communitySideService;
     private final DropdownService dropdownService;
     private final ImageLinkService imageLinkService;
-//    private final KafkaProducer kafkaProducer;
+    private final KafkaProducer kafkaProducer;
     // kafka test 메시지 전송 api
     @GetMapping("/side/test")
     public ApiResponse<Object> test(){
         System.out.println("test진행 중");
-//        kafkaProducer.sendMessage("test", "test성공 중");
+        kafkaProducer.sendMessage("test", "test성공 중");
         System.out.println("test진행 완료");
         return ApiResponse.ofSuccess("test");
     }

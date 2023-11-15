@@ -16,17 +16,8 @@ public class KafkaProducer {
 
     // "test, message"로 test
     public void sendMessage(String kafkaTopic, String message){
-        ObjectMapper mapper = new ObjectMapper();
-        System.out.println("kafka message send in 1:" + message);
-        String jsonInString = "";
-        try {
-            jsonInString = mapper.writeValueAsString(message);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        System.out.println("kafka message send in 2:" + jsonInString);
+        System.out.println("kafka message send in 2:" + message);
         try{
-            System.out.println("kafka message send in 3:" + jsonInString);
             kafkaTemplate.send(kafkaTopic, message);
         } catch (Exception e) {
             e.printStackTrace();
