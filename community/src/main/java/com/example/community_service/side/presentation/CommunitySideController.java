@@ -1,6 +1,6 @@
 package com.example.community_service.side.presentation;
 
-import com.example.community_service.config.kafka.KafkaProducer;
+//import com.example.community_service.config.kafka.KafkaProducer;
 import com.example.community_service.global.base.ApiResponse;
 import com.example.community_service.side.application.CommunitySideService;
 import com.example.community_service.side.application.DropdownService;
@@ -26,12 +26,12 @@ public class CommunitySideController {
     private final CommunitySideService communitySideService;
     private final DropdownService dropdownService;
     private final ImageLinkService imageLinkService;
-    private final KafkaProducer kafkaProducer;
+//    private final KafkaProducer kafkaProducer;
     // kafka test 메시지 전송 api
     @GetMapping("/side/test")
     public ApiResponse<Object> test(){
         System.out.println("test진행 중");
-        kafkaProducer.sendMessage("test", "test성공 중");
+//        kafkaProducer.sendMessage("test", "test성공 중");
         System.out.println("test진행 완료");
         return ApiResponse.ofSuccess("test");
     }

@@ -94,6 +94,14 @@ public class CommunityServiceImpl implements CommunityService {
         return communityRepository.existsByOwnerUuid(userUuid);
     }
 
+    // 해당 유저의 커뮤니티 id 불러오기
+    @Transactional(readOnly = true)
+    @Override
+    public Long getCommunityIdByOwnerUuid(String userUuid) {
+
+        return communityRepository.findByOwnerUuid(userUuid).getId();
+    }
+
     // 커뮤니티 회원수 업데이트
     @Override
     public void updateCommunityMemberCount(Long communityId, Integer memberCount) {
