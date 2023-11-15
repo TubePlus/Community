@@ -24,6 +24,7 @@ public class KafkaProducer {
         }
         log.info("kafka message send :" + jsonInString);
         try{
+            System.out.println("kafka message send in :" + jsonInString);
             kafkaTemplate.send(kafkaTopic, message);
         } catch (Exception e) {
             e.printStackTrace();

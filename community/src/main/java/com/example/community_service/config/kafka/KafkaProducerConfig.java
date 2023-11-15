@@ -36,7 +36,6 @@ public class KafkaProducerConfig {
     @Bean
     public ProducerFactory<String, String> producerFactory(){
         Map<String, Object> config = new HashMap<>();
-        log.info("bootstrapServers : " + bootstrapServers);
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -44,20 +43,20 @@ public class KafkaProducerConfig {
         return new DefaultKafkaProducerFactory<>(config);
     }
 
-    @Bean
-    public NewTopic paymentTopic() {
-        return new NewTopic("test", 1, (short) 1);
-    }
-
-    // test bean 생성 로직(테스트용)
-    // input(topicName, partition, replication)
-    @Bean
-    public NewTopic test(){
-        return TopicBuilder.name("test")
-                .partitions(1)
-                .replicas(1)
-                .build();
-    }
+//    @Bean
+//    public NewTopic paymentTopic() {
+//        return new NewTopic("test", 1, (short) 1);
+//    }
+//
+//    // test bean 생성 로직(테스트용)
+//    // input(topicName, partition, replication)
+//    @Bean
+//    public NewTopic test(){
+//        return TopicBuilder.name("test")
+//                .partitions(1)
+//                .replicas(1)
+//                .build();
+//    }
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
