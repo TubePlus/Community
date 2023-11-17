@@ -57,6 +57,15 @@ public class CommunityController {
         return ApiResponse.ofSuccess("Welcome to Community Service");
     }
 
+    @Tag(name = "서버 테스트")
+    @Operation(summary = "API테스트")
+    @GetMapping("/test/{id}")
+    public ApiResponse<Object> test(@PathVariable Long id) {
+
+        String data = communityService.getOwnerUuidByCommunityId(id);
+        return ApiResponse.ofSuccess(data);
+    }
+
     @Tag(name = "데이터 검색")
     @Operation(summary = "커뮤니티 가입 유저 목록 조회")
     @GetMapping("/{communityId}/members/list")

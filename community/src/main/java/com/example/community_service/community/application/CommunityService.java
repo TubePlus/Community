@@ -45,34 +45,8 @@ public interface CommunityService { // todo: 인터페이스 도메인별로 구
     // 커뮤니티 정보 수정
     ResponseUpdateCommunityDto updateCommunity(RequestUpdateCommunityDto requestDto, Long communityId);
 
-
-
-
-
-
-
-
-
-
-//    // 커뮤니티 관리
-//    ResponseCreateCommunityDto createCommunity(RequestCreateCommunityDto requestDto) throws JsonProcessingException;
-//    ResponseUpdateCommunityDto updateCommunity(RequestUpdateCommunityDto requestDto, Long communityId);
-//
-//    // 커뮤니티 밴유저 관리
-//    ResponseBanUserDto banUser(BanUserDto requestDto, Long communityId);
-//    ResponseUpdateBanEndDateDto updateBanEndDate(RequestUpdateBanEndDateDto requestDto, Long communityId);
-//    ResponseUnbanUserDto unbanUser(RequestUnbanUserDto requestDto, Long communityId);
-//    ResponseGetBannedUserListDto getBannedUserList(RequestGetBannedUserListDto requestDto, Long communityId);
-//
-//    // 커뮤니티 가입/탈퇴/조회
-//    ResponseJoinCommunityDto joinCommunity(RequestJoinCommunityDto requestDto, Long communityId);
-//    ResponseLeaveCommunityDto leaveCommunity(RequestLeaveCommunityDto requestDto, Long communityId);
-//    ResponseGetJoinedCommunityListDto getJoinedCommunityList(
-//            RequestGetJoinedCommunityListDto requestDto, Integer count, Integer page);
-//    ResponseGetCommunityInfoDto getCommunityInfo(Long communityId);
-//
-//    // 커뮤니티 매니저 관리
-//    ResponseRegisterManagerDto registerManager(RequestRegisterManagerDto requestDto, Long communityId);
-//    ResponseDeleteManagerDto deleteManager(RequestDeleteManagerDto requestDto, Long communityId);
-//    ResponseGetManagerListDto getManagerList(RequestGetManagerListDto requestDto, Long communityId);
+    /**
+     * 기타
+     */
+    String getOwnerUuidByCommunityId(Long communityId);
 }

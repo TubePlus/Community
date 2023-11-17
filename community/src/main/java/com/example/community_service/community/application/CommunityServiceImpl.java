@@ -74,6 +74,14 @@ public class CommunityServiceImpl implements CommunityService {
         return ResponseUpdateCommunityDto.formResponseDto(targetCommunity.getId());
     }
 
+    // 커뮤니티의 크리에이터 uuid 조회
+    @Override
+    public String getOwnerUuidByCommunityId(Long communityId) {
+
+        Community targetCommunity = searchCommunity(communityId);
+        return targetCommunity.getOwnerUuid();
+    }
+
     /**
      * 서비스 로직(재사용성 높은 로직)
      */
