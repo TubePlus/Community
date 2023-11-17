@@ -46,4 +46,18 @@ public class ResponseCheckVo {
                     .build();
         }
     }
+
+    @Getter
+    @Builder
+    public static class CheckMemberOfCommunityVo {
+
+        private Boolean isJoined;
+
+        public static CheckMemberOfCommunityVo formResponseVo(Boolean isJoined) {
+
+            return CheckMemberOfCommunityVo.builder()
+                    .isJoined(isJoined)
+                    .build();
+        }
+    }
 }

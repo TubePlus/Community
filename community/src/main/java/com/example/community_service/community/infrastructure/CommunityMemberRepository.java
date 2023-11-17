@@ -14,4 +14,5 @@ public interface CommunityMemberRepository extends JpaRepository<CommunityMember
     List<CommunityMember> findAllByCommunityId(Long communityId);
     Boolean existsByCommunityIdAndUserUuid(Long communityId, String userUuid);
     Long countByCommunityIdAndAndIsActiveTrue(Long communityId);
+    Boolean existsByCommunityIdAndUserUuidAndIsActiveTrue(Long communityId, String userUuid);
 }

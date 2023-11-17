@@ -59,6 +59,14 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
         return getCommunityMemberCount(communityId).intValue();
     }
 
+    // 커뮤니티 가입 여부 확인
+    @Transactional(readOnly = true)
+    @Override
+    public Boolean checkMemberVerification(Long communityId, String userUuid) {
+
+        return communityMemberRepository.existsByCommunityIdAndUserUuidAndIsActiveTrue(communityId, userUuid);
+    }
+
     // 유저 커뮤니티 탈퇴(커뮤니티 내 계정 비활성화 처리)
     @Override
     public Integer leaveCommunity(Long communityId, String userUuid) {

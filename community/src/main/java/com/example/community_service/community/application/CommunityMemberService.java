@@ -35,6 +35,9 @@ public interface CommunityMemberService {
 
     // 커뮤니티 회원 재가입
     Integer rejoinCommunity(Long communityId, String userUuid);
+
+    // 커뮤니티 가입 여부 확인
+    Boolean checkMemberVerification(Long communityId, String userUuid);
     
     /**
      * 커뮤니티의 유저 밴 관련

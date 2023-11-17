@@ -139,6 +139,20 @@ public class CommunityController {
         return ApiResponse.ofSuccess(responseVo);
     }
 
+    @Tag(name = "데이터 검증 API") @Operation(summary = "유저의 커뮤니티 가입 여부 확인")
+    @PostMapping("{communityId}/verified")
+    public ApiResponse<Object> checkMemberVerification(
+            @Valid @RequestBody RequestCheckVo requestVo, @PathVariable Long communityId) {
+
+        Boolean isJoined = communityMemberService.checkMemberVerification(communityId, requestVo.getUserUuid());
+
+        ResponseCheckVo.CheckMemberOfCommunityVo responseVo =
+                ResponseCheckVo.CheckMemberOfCommunityVo.formResponseVo(isJoined);
+
+        return ApiResponse.ofSuccess(responseVo);
+    }
+
+
     //todo: 커뮤니티 생성 로직
     // 1. 크리에이터 등록 api(user 서버)
     // 2. 커뮤니티 생성 api(커뮤니티 서버)
