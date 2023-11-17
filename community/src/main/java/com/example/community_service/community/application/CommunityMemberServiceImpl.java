@@ -1,6 +1,7 @@
 package com.example.community_service.community.application;
 
 import com.example.community_service.community.domain.CommunityMember;
+import com.example.community_service.community.domain.QCommunityMember;
 import com.example.community_service.community.dto.BanUserDto;
 import com.example.community_service.community.dto.DeleteManagerDto;
 import com.example.community_service.community.dto.request.*;
@@ -8,15 +9,19 @@ import com.example.community_service.community.dto.response.*;
 import com.example.community_service.community.infrastructure.CommunityMemberRepository;
 import com.example.community_service.global.error.ErrorCode;
 import com.example.community_service.global.error.handler.BusinessException;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 //import org.springframework.data.redis.cache.RedisCacheManager;
 //import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +30,7 @@ import java.time.LocalDateTime;
 public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     private final CommunityMemberRepository communityMemberRepository;
+    private final JPAQueryFactory queryFactory;
 //    private final RedisTemplate<String, String> redisTemplate;
 //    private final RedisCacheManager redisCacheManager;
 
@@ -185,11 +191,37 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
         return banEndDate.atTime(23, 59, 59);
     }
 
-    // todo: 미완성
-    // 커뮤니티 회원 리스트 조회
-//    @Override
-//    public List<CommunityMember> getCommunityMemberList(Long communityId) {
-//
-//        return communityMemberRepository.findAllByCommunityId(communityId);
-//    }
+    // 커뮤니티id에 따른 가입한 유저의 uuid 보내주기(parameter: ENUM(NORMAL / MEMBERSHIP)
+    @Transactional(readOnly = true)
+     public List<String> getUserUuidListByCommunityId(Long communityId, String boardType) {
+
+        QCommunityMember qCommunityMember = new QCommunityMember("communityMember");
+        BooleanExpression condition = null;
+
+        if(boardType.equals("NORMAL")) {
+
+            condition = qCommunityMember.communityId.eq(communityId)
+                    .and(qCommunityMember.isMembershipUser.eq(false))
+                    .and(qCommunityMember.isActive.eq(true));
+        } else if (boardType.equals("MEMBERSHIP")) {
+
+            condition = qCommunityMember.communityId.eq(communityId)
+                    .and(qCommunityMember.isMembershipUser.eq(true))
+                    .and(qCommunityMember.isActive.eq(true));
+
+        }
+
+        if(condition != null) {
+
+            List<String> fetch = queryFactory.select(qCommunityMember.userUuid)
+                    .from(qCommunityMember)
+                    .where(condition)
+                    .fetch();
+
+            return fetch;
+        } else {
+
+            throw new BusinessException(ErrorCode.NOT_FOUND_RESOURCE);
+        }
+    }
 }

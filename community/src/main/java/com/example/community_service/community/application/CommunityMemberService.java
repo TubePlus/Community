@@ -59,13 +59,4 @@ public interface CommunityMemberService {
 
     // 커뮤니티 매니저 해제 처리
     DeleteManagerDto.Response deleteManager(Long communityId, DeleteManagerDto.Request requestDto);
-
-
-
-
-
-
-    // todo: 미완성
-    // 커뮤니티 회원 리스트 조회
-//    List<CommunityMember> getCommunityMemberList(Long communityId);
 }
