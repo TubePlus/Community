@@ -25,6 +25,8 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     topic1:
       name: "boardCreateAlarm"
+    topic2:
+      name: "communityInteraction"
   profiles:
     active: local
   application:
