@@ -45,8 +45,6 @@ public interface CommunityService { // todo: 인터페이스 도메인별로 구
     // 커뮤니티 정보 수정
     ResponseUpdateCommunityDto updateCommunity(RequestUpdateCommunityDto requestDto, Long communityId);
 
-    /**
-     * 기타
-     */
     String getOwnerUuidByCommunityId(Long communityId);
+
 }
