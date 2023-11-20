@@ -7,8 +7,10 @@ import com.example.community_service.community.dto.DeleteManagerDto;
 import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
 import com.example.community_service.community.infrastructure.CommunityMemberRepository;
+import com.example.community_service.config.kafka.KafkaProducer;
 import com.example.community_service.global.error.ErrorCode;
 import com.example.community_service.global.error.handler.BusinessException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     private final CommunityMemberRepository communityMemberRepository;
     private final JPAQueryFactory queryFactory;
+    private final KafkaProducer kafkaProducer;
 //    private final RedisTemplate<String, String> redisTemplate;
 //    private final RedisCacheManager redisCacheManager;
 
@@ -40,6 +43,13 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
         // 유저 정보 생성
         createCommunityMember(userUuid, communityId);
+
+        // kafka communityInterationTopic에 커뮤니티 가입 정보 전달
+        try {
+            kafkaProducer.producerJoinCommunity(communityId, 800L);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
         // 커뮤니티 유저 수 반환
         return getCommunityMemberCount(communityId).intValue();

@@ -62,7 +62,8 @@ public class KafkaConsumer {
         List<String> members = communityMemberService
                 .getUserUuidListByCommunityId(boardDto.getCommunityId(), boardDto.getBoardType());
 
-        Map<String, Object> creatorMap = objectMapper.convertValue(boardDto, new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> creatorMap = objectMapper
+                .convertValue(boardDto, new TypeReference<Map<String, Object>>() {});
         creatorMap.put("board", boardDto);
         creatorMap.put("authorUuid", authorUuid);
         creatorMap.put("members", members);

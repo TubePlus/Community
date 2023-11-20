@@ -34,7 +34,10 @@ public enum ErrorCode {
     /*sms message*/
     EXTERNAL_NCP_SERVER_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "F001", "인증번호 발송에 실패하였습니다"),
     CERT_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "F002", "인증번호가 만료되었습니다"),
-    CERT_CODE_INVALID(HttpStatus.BAD_REQUEST, "F002", "인증번호가 유효하지 않습니다");
+    CERT_CODE_INVALID(HttpStatus.BAD_REQUEST, "F002", "인증번호가 유효하지 않습니다"),
+
+    /*kafka message*/
+    KAFKA_SEND_MESSAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "K001", "kafka 메시지 전송 실패");
 
 
     private final HttpStatus status;

@@ -1,10 +1,13 @@
 
 package com.example.community_service.config.kafka;
 
+import com.example.community_service.config.kafka.dto.CommunityInteractionDto;
+import com.example.community_service.config.kafka.dto.InteractionType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +16,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class KafkaProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
-
+    // env에 등록된 kafka topic을 가져옴
+    @Value("${spring.kafka.topic2.name}")
+    private String topic2;
     // "test, message"로 test
     public void sendMessage(String kafkaTopic, String message){
         System.out.println("kafka message send in 2:" + message);
@@ -24,5 +29,13 @@ public class KafkaProducer {
         }
 
     }
-//    public void sendMessage : kafkaProducer.send("topicName", messageDto);
+
+    public void producerJoinCommunity(Long communityId, Long point) throws JsonProcessingException {
+        CommunityInteractionDto communityInteractionDto
+                = new CommunityInteractionDto(communityId, point, InteractionType.JOIN);
+        // communityInteractionDto를 json으로 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonInString = objectMapper.writeValueAsString(communityInteractionDto);
+        sendMessage(topic2,jsonInString);
+    }
 }
