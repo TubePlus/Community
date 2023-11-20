@@ -26,6 +26,8 @@ import java.util.Map;
 public class KafkaProducerConfig {
     @Value(" ${spring.kafka.producer.bootstrap-servers}")
     private String bootstrapServers;
+    @Value(" ${spring.kafka.topic1.name}")
+    private String topic1;
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> configs = new HashMap<>();
@@ -43,20 +45,11 @@ public class KafkaProducerConfig {
         return new DefaultKafkaProducerFactory<>(config);
     }
 
-//    @Bean
-//    public NewTopic paymentTopic() {
-//        return new NewTopic("test", 1, (short) 1);
-//    }
-//
-//    // test bean 생성 로직(테스트용)
-//    // input(topicName, partition, replication)
-//    @Bean
-//    public NewTopic test(){
-//        return TopicBuilder.name("test")
-//                .partitions(1)
-//                .replicas(1)
-//                .build();
-//    }
+    @Bean
+    public NewTopic Topic1() {
+        return new NewTopic(topic1, 1, (short) 1);
+    }
+
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
