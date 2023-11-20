@@ -62,4 +62,6 @@ public interface CommunityMemberService {
 
     // 커뮤니티 매니저 해제 처리
     DeleteManagerDto.Response deleteManager(Long communityId, DeleteManagerDto.Request requestDto);
+
+    List<String> getUserUuidListByCommunityId(Long communityId, String boardType);
 }

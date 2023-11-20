@@ -201,7 +201,8 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 커뮤니티id에 따른 가입한 유저의 uuid 보내주기(parameter: ENUM(NORMAL / MEMBERSHIP)
     @Transactional(readOnly = true)
-     public List<String> getUserUuidListByCommunityId(Long communityId, String boardType) {
+    @Override
+    public List<String> getUserUuidListByCommunityId(Long communityId, String boardType) {
 
         QCommunityMember qCommunityMember = new QCommunityMember("communityMember");
         BooleanExpression condition = null;
