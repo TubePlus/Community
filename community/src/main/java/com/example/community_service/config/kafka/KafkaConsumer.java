@@ -31,7 +31,7 @@ public class KafkaConsumer {
     @Value("${spring.kafka.topic1.name}")
     private String boardCreateAlarmTopic;
 
-    @KafkaListener(topics = "test", groupId = "etc-service")
+    @KafkaListener(topics = "test", groupId = "community-service-test")
     public void processMessage(String kafkaMessage) {
         Map<Object, Object> map = new HashMap<>(); // kafka 역직렬화
         try {
@@ -43,7 +43,7 @@ public class KafkaConsumer {
         }
     }
     // board데이터와 communityMember데이터를 합쳐서 etc 알람으로 보내는 로직
-    @KafkaListener(topics = "boardCreate", groupId = "etc-service")
+    @KafkaListener(topics = "boardCreate", groupId = "community-service-boardCreate")
     public void consumeBoardCreate(String message) {
         try {
             BoardDto boardDto = objectMapper.readValue(message, BoardDto.class);
