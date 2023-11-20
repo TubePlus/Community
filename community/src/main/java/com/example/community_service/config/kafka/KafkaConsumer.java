@@ -45,6 +45,7 @@ public class KafkaConsumer {
     // board데이터와 communityMember데이터를 합쳐서 etc 알람으로 보내는 로직
     @KafkaListener(topics = "boardCreate", groupId = "community-service-boardCreate")
     public void consumeBoardCreate(String message) {
+        log.info("kafka message received =====> " + message);
         try {
             BoardDto boardDto = objectMapper.readValue(message, BoardDto.class);
             Map<String, Object> creatorMap = createCreatorMap(boardDto);
