@@ -1,9 +1,11 @@
 package com.example.community_service.community.application;
 
+import com.example.community_service.community.domain.Community;
 import com.example.community_service.community.domain.QCommunity;
 import com.example.community_service.community.domain.QCommunityMember;
 import com.example.community_service.community.dto.*;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -167,5 +169,17 @@ public class SearchServiceImpl implements SearchService {
                 );
 
         return PageableExecutionUtils.getPage(fetch, pageable, Count::fetchOne);
+    }
+
+    // 서비스 내 모든 커뮤니티에서 n개의 커뮤니티 랜덤반환
+    @Override
+    public List<Community> getRandomCommunities(Integer size) {
+
+        QCommunity qCommunity = new QCommunity("community");
+
+        return queryFactory.selectFrom(qCommunity)
+                .orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
+                .limit(size) //몇개를 뽑아올건지
+                .fetch();
     }
 }

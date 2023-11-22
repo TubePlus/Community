@@ -1,5 +1,6 @@
 package com.example.community_service.community.application;
 
+import com.example.community_service.community.domain.Community;
 import com.example.community_service.community.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,4 +25,7 @@ public interface SearchService {
 
     // 해당 커뮤니티의 매니저 모두 조회
     Page<GetManagerListDto.Response> getAllManagers(Long communityId, Pageable pageable);
+
+    // 서비스 내 모든 커뮤니티에서 n개의 커뮤니티 랜덤반환
+    List<Community> getRandomCommunities(Integer size);
 }

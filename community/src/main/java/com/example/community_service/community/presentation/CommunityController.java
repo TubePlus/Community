@@ -4,6 +4,7 @@ import com.example.community_service.community.application.CommunityMemberServic
 import com.example.community_service.community.application.CommunityServiceImpl;
 import com.example.community_service.community.application.SearchServiceImpl;
 import com.example.community_service.community.application.YoutubeService;
+import com.example.community_service.community.domain.Community;
 import com.example.community_service.community.dto.*;
 import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
@@ -58,7 +59,7 @@ public class CommunityController {
     }
 
     @Tag(name = "서버 테스트")
-    @Operation(summary = "API테스트")
+    @Operation(summary = "기능 테스트용 임시 API")
     @GetMapping("/test/{id}")
     public ApiResponse<Object> test(@PathVariable Long id) {
 
@@ -76,6 +77,17 @@ public class CommunityController {
 
         return ApiResponse.ofSuccess(data);
     }
+
+    @Tag(name = "데이터 검색")
+    @Operation(summary = "전체 커뮤니티 데이터 중 랜덤 n개 반환")
+    @GetMapping("/random/{size}")
+    public ApiResponse<Object> getRandomCommunities(@PathVariable Integer size) {
+
+        List<Community> randomCommunities = searchService.getRandomCommunities(size);
+
+        return ApiResponse.ofSuccess(randomCommunities);
+    }
+
 
     @Tag(name = "데이터 검색")
     @Operation(summary = "크리에이터uuid들에 해당하는 커뮤니티들 조회")
