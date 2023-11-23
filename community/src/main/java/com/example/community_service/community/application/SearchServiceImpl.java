@@ -4,8 +4,12 @@ import com.example.community_service.community.domain.Community;
 import com.example.community_service.community.domain.QCommunity;
 import com.example.community_service.community.domain.QCommunityMember;
 import com.example.community_service.community.dto.*;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +17,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +40,9 @@ public class SearchServiceImpl implements SearchService {
         // 동시성 문제 해결 위해서 매번 QClass 인스턴스화
         QCommunity qCommunity = new QCommunity("community");
         QCommunityMember qCommunityMember = new QCommunityMember("communityMember");
+
+        // 정렬 정보를 얻어오기
+//        List<OrderSpecifier<?>> orderSpecifiers = getOrderSpecifiers(qCommunity, pageable.getSort());
 
         List<GetJoinedCommunitiesDto.Response> fetch =
                 queryFactory.select(Projections.fields(GetJoinedCommunitiesDto.Response.class,
@@ -59,6 +67,71 @@ public class SearchServiceImpl implements SearchService {
 
         return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
     }
+
+//    private List<OrderSpecifier> getAllOrderSpecifiers(Pageable pageable) {
+//
+//        List<OrderSpecifier> ORDERS = new ArrayList<>();
+//
+//        if (!isEmpty(pageable.getSort())) {
+//            for (Sort.Order order : pageable.getSort()) {
+//                Order direction = order.getDirection().isAscending() ? Order.ASC : Order.DESC;
+//                switch (order.getProperty()) {
+//                    case "id":
+//                        OrderSpecifier<?> orderId = QueryDslUtil.getSortedColumn(direction, QRoom.room, "id");
+//                        ORDERS.add(orderId);
+//                        break;
+//                    case "user":
+//                        OrderSpecifier<?> orderUser = QueryDslUtil.getSortedColumn(direction, QUser.user, "name");
+//                        ORDERS.add(orderUser);
+//                        break;
+//                    case "category":
+//                        OrderSpecifier<?> orderCategory = QueryDslUtil.getSortedColumn(direction, QRoom.room, "category");
+//                        ORDERS.add(orderCategory);
+//                        break;
+//                    default:
+//                        break;
+//                }
+//            }
+//        }
+//
+//        return ORDERS;
+//    }
+//    // OrderSpecifier 리스트를 반환하는 메서드 추가
+//    private List<OrderSpecifier<?>> getOrderSpecifiers(QCommunity qCommunity, Sort sort) {
+//        return sort.stream()
+//                .map(order -> {
+//                    ComparableExpressionBase<?> comparableExpressionBase;
+//                    if ("id".equals(order.getProperty())) {
+//                        comparableExpressionBase = qCommunity.id;
+//                    } else if ("ownerUuid".equals(order.getProperty())) {
+//                        comparableExpressionBase = qCommunity.ownerUuid;
+//                    } else if ("profileImage".equals(order.getProperty())) {
+//                        comparableExpressionBase = qCommunity.profileImage;
+//                    } else if ("bannerImage".equals(order.getProperty())) {
+//                        comparableExpressionBase = qCommunity.bannerImage;
+//                    } else if ("communityName".equals(order.getProperty())) {
+//                        comparableExpressionBase = qCommunity.communityName;
+//                    } else if ("description".equals(order.getProperty())) {
+//                        comparableExpressionBase = qCommunity.description;
+//                    } else if ("youtubeName".equals(order.getProperty())) {
+//                        comparableExpressionBase = qCommunity.youtubeName;
+//                    } else if ("communityMemberCount".equals(order.getProperty())) {
+//                        comparableExpressionBase = qCommunity.communityMemberCount;
+//                    } else if ("createdDate".equals(order.getProperty())) {
+//                        comparableExpressionBase = qCommunity.createdDate;
+//                    } else if ("updatedDate".equals(order.getProperty())) {
+//                        comparableExpressionBase = qCommunity.updatedDate;
+//                    }
+//
+//                    else {
+//                        // 기본적으로 문자열로 처리
+//                        comparableExpressionBase = Expressions.stringPath(qCommunity, order.getProperty());
+//                    }
+//
+//                    return order.isAscending() ? comparableExpressionBase.asc() : comparableExpressionBase.desc();
+//                })
+//                .toList();
+//    }
     
     // todo: 최적화하기
     // 커뮤니티에 가입된 유저 모두 조회
@@ -83,6 +156,7 @@ public class SearchServiceImpl implements SearchService {
                 .where(qCommunityMember.communityId.eq(communityId).and(qCommunityMember.isActive.eq(true)))
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
+                .orderBy()
                 .fetch();
 
         JPAQuery<Long> count = queryFactory.select(qCommunityMember.count())
