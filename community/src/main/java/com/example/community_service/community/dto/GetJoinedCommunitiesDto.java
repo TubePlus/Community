@@ -1,25 +1,26 @@
 package com.example.community_service.community.dto;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 public class GetJoinedCommunitiesDto {
 
-    @Builder
     @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Request {
+
         private String userUuid;
 
-        public static Request formRequestDto(String userUuid) {
-            return Request.builder()
-                    .userUuid(userUuid)
-                    .build();
-        }
+//        public static Request formRequestDto(String userUuid) {
+//            return Request.builder()
+//                    .userUuid(userUuid)
+//                    .build();
+//        }
     }
 
     @Getter
-    @NoArgsConstructor
     public static class Response {
 
         private Long communityId;
