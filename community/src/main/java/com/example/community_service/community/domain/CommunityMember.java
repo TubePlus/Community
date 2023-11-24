@@ -3,9 +3,6 @@ package com.example.community_service.community.domain;
 import com.example.community_service.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -26,7 +23,7 @@ public class CommunityMember extends BaseEntity { // todo: 이름 변경(복수)
     private Long communityId;
 
     // 가입한 유저 uuid
-    @Column(nullable = false, name = "user_uuid")
+    @Column(name = "user_uuid")
     private String userUuid;
 
     // 밴 여부
