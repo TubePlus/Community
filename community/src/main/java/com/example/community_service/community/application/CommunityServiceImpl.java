@@ -56,7 +56,6 @@ public class CommunityServiceImpl implements CommunityService {
 
         // 커뮤니티 저장
         Community savedCommunity = communityRepository.save(community);
-        // todo : 커뮤니티 생성시 크리에이터 로그데이터에 community_id, user_uuid, category, member_count 저장
         try {
             kafkaProducer.producerCreateCreator(
                     savedCommunity.getId(),
@@ -81,7 +80,15 @@ public class CommunityServiceImpl implements CommunityService {
         targetCommunity.updateCommunity(
                 requestDto.getCommunityName(), requestDto.getDescription(),
                 requestDto.getProfileImage(), requestDto.getBannerImage());
-
+        try {
+            kafkaProducer.producerCreateCreator(
+                    targetCommunity.getId(),
+                    targetCommunity.getOwnerUuid(),
+                    targetCommunity.getCommunityName(),
+                    targetCommunity.getYoutubeName());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         return ResponseUpdateCommunityDto.formResponseDto(targetCommunity.getId());
     }
 
