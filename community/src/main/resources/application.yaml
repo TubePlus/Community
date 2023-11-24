@@ -27,6 +27,8 @@ spring:
       name: "boardCreateAlarm"
     topic2:
       name: "communityInteraction"
+    topic3:
+      name: "creatorDataAggregationCommunity"
   profiles:
     active: local
   application:

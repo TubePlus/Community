@@ -5,9 +5,11 @@ import com.example.community_service.community.dto.CreateCommunityDto;
 import com.example.community_service.community.dto.request.*;
 import com.example.community_service.community.dto.response.*;
 import com.example.community_service.community.infrastructure.*;
+import com.example.community_service.config.kafka.KafkaProducer;
 import com.example.community_service.global.error.ErrorCode;
 import com.example.community_service.global.error.handler.BusinessException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,7 @@ import java.util.List;
 @Transactional
 @Slf4j
 public class CommunityServiceImpl implements CommunityService {
-
+    private final KafkaProducer kafkaProducer;
     private final CommunityRepository communityRepository;
 
     // todo: 검색 조회 전체에 querydsl페이지네이션 구현
@@ -54,7 +56,16 @@ public class CommunityServiceImpl implements CommunityService {
 
         // 커뮤니티 저장
         Community savedCommunity = communityRepository.save(community);
-
+        // todo : 커뮤니티 생성시 크리에이터 로그데이터에 community_id, user_uuid, category, member_count 저장
+        try {
+            kafkaProducer.producerCreateCreator(
+                    savedCommunity.getId(),
+                    savedCommunity.getOwnerUuid(),
+                    savedCommunity.getCommunityName(),
+                    savedCommunity.getYoutubeName());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         return CreateCommunityDto.Response.formResponseDto(savedCommunity.getId());
     }
 
