@@ -27,7 +27,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 @Slf4j
 public class CommunityMemberServiceImpl implements CommunityMemberService {
 
@@ -39,6 +39,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 유저 커뮤니티 신규 가입
     @Override
+    @Transactional
     public Integer joinCommunity(Long communityId, String userUuid) {
 
         // 유저 정보 생성
@@ -57,6 +58,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 탈퇴 유저 커뮤니티 재가입
     @Override
+    @Transactional
     public Integer rejoinCommunity(Long communityId, String userUuid) {
 
         // 유저 정보 불러오기
@@ -70,7 +72,6 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
     }
 
     // 커뮤니티 가입 여부 확인
-    @Transactional(readOnly = true)
     @Override
     public Boolean checkMemberVerification(Long communityId, String userUuid) {
 
@@ -79,6 +80,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 유저 커뮤니티 탈퇴(커뮤니티 내 계정 비활성화 처리)
     @Override
+    @Transactional
     public Integer leaveCommunity(Long communityId, String userUuid) {
 
         // 유저 정보 불러오기
@@ -93,6 +95,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 유저 밴 처리
     @Override
+    @Transactional
     public BanUserDto.Response banUser(Long communityId, BanUserDto.Request requestDto) {
 
         // 유저 정보 불러오기
@@ -110,6 +113,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 유저 밴 해제일 업데이트
     @Override
+    @Transactional
     public ResponseUpdateBanEndDateDto updateBanEndDate(Long communityId, RequestUpdateBanEndDateDto requestDto) {
 
         // 유저 불러오기
@@ -127,6 +131,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 유저 밴 해제
     @Override
+    @Transactional
     public ResponseUnbanUserDto unbanUser(Long communityId, RequestUnbanUserDto requestDto) {
 
         // 유저 불러오기
@@ -140,6 +145,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 커뮤니티 매니저 추가
     @Override
+    @Transactional
     public ResponseRegisterManagerDto registerManager(Long communityId, RequestRegisterManagerDto requestDto) {
 
         // 유저 불러오기
@@ -153,6 +159,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 커뮤니티 매니저 삭제
     @Override
+    @Transactional
     public DeleteManagerDto.Response deleteManager(Long communityId, DeleteManagerDto.Request requestDto) {
 
         // 유저 불러오기
@@ -170,6 +177,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 커뮤니티 회원 생성
     @Override
+    @Transactional
     public void createCommunityMember(String userUuid, Long communityId) {
 
         CommunityMember joinedMember = CommunityMember.joinCommunity(
@@ -179,7 +187,6 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 커뮤니티 회원수 조회
     @Override
-    @Transactional(readOnly = true)
     public Long getCommunityMemberCount(Long communityId) {
 
         return communityMemberRepository.countByCommunityIdAndAndIsActiveTrue(communityId);
@@ -187,7 +194,6 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
 
     // 유저 가입 이력 확인
     @Override
-    @Transactional(readOnly = true)
     public Boolean checkMemberJoinHistory(Long communityId, String userUuid) {
 
         return communityMemberRepository.existsByCommunityIdAndUserUuid(communityId, userUuid);
@@ -210,7 +216,6 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
     }
 
     // 커뮤니티id에 따른 가입한 유저의 uuid 보내주기(parameter: ENUM(NORMAL / MEMBERSHIP)
-    @Transactional(readOnly = true)
     @Override
     public List<String> getUserUuidListByCommunityId(Long communityId, String boardType) {
 

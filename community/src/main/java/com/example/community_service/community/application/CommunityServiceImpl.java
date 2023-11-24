@@ -20,7 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 @Slf4j
 public class CommunityServiceImpl implements CommunityService {
     private final KafkaProducer kafkaProducer;
@@ -29,7 +29,6 @@ public class CommunityServiceImpl implements CommunityService {
     // todo: 검색 조회 전체에 querydsl페이지네이션 구현
 
     // 커뮤니티 상세 조회하기
-    @Transactional(readOnly = true)
     @Override
     public ResponseGetCommunityInfoDto getCommunityInfo(Long communityId) {
 
@@ -47,6 +46,7 @@ public class CommunityServiceImpl implements CommunityService {
 
     // 크리에이터 커뮤니티 생성
     @Override
+    @Transactional
     public CreateCommunityDto.Response createCommunity(CreateCommunityDto.Request requestDto) {
 
         // 커뮤니티 생성
@@ -70,6 +70,7 @@ public class CommunityServiceImpl implements CommunityService {
 
     // 커뮤니티 정보 수정
     @Override
+    @Transactional
     public ResponseUpdateCommunityDto updateCommunity(
             RequestUpdateCommunityDto requestDto, Long communityId) {
 
@@ -104,7 +105,6 @@ public class CommunityServiceImpl implements CommunityService {
      * 서비스 로직(재사용성 높은 로직)
      */
     // 커뮤니티 검색
-    @Transactional(readOnly = true)
     @Override
     public Community searchCommunity(Long communityId) {
 
@@ -113,7 +113,6 @@ public class CommunityServiceImpl implements CommunityService {
     }
 
     // 커뮤니티 존재 여부 체크
-    @Transactional(readOnly = true)
     @Override
     public Boolean checkCommunityExistence(String userUuid) {
 
@@ -121,7 +120,6 @@ public class CommunityServiceImpl implements CommunityService {
     }
 
     // 해당 유저의 커뮤니티 id 불러오기
-    @Transactional(readOnly = true)
     @Override
     public Long getCommunityIdByOwnerUuid(String userUuid) {
 
@@ -130,6 +128,7 @@ public class CommunityServiceImpl implements CommunityService {
 
     // 커뮤니티 회원수 업데이트
     @Override
+    @Transactional
     public void updateCommunityMemberCount(Long communityId, Integer memberCount) {
 
         // 커뮤니티 불러오기
@@ -140,7 +139,6 @@ public class CommunityServiceImpl implements CommunityService {
     }
 
     // 커뮤니티 이름 중복 여부 조회
-    @Transactional(readOnly = true)
     @Override
     public Boolean isCommunityNameDuplicate(String communityName) {
 
